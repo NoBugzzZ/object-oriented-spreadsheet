@@ -1,0 +1,13 @@
+{
+  "name": "utils",
+  "version": "1.0.0",
+  "description": "``` {     \"type\":\"object\",     \"title\":\"Item\",     \"properties\":{         \"value\":{             \"type\":\"integer\",             \"title\":\"value\",         }     } } {     \"type\":\"object\",     \"title\":\"Income\",     \"properties\":{         \"total\":{             \"type\":\"integer\",             \"formula\":\"SUM(Item.value)\",         },         \"items\":{             \"type\":\"array\",             \"items\":{                 \"$ref\":\"Item\"             }         }     },     \"$def\":{         \"Item\":{             \"type\":\"object\",             \"title\":\"Item\",             \"properties\":{                 \"value\":{                     \"type\":\"integer\",                     \"title\":\"value\",                 }             }         }     } } ```",
+  "main": "Event.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}

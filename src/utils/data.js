@@ -21,7 +21,7 @@ const Income = {
         value: {
           type: "integer",
           title: "value",
-        },
+        }
       },
     },
   },
@@ -87,8 +87,8 @@ const Account = {
     }
   }
 }
-
-export {
+const Schemas = {
   Income,
   Account
 }
+export default Schemas;

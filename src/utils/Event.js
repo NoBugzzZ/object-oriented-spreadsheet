@@ -17,10 +17,7 @@ class EventEmitter {
     console.log("emit", event, params)
   }
 }
-export {
-  EventEmitter
-}
-
+export default EventEmitter;
 // const event=new EventEmitter("test");
 // event.on("event",(a,b)=>{
 //   const c=a+b;
