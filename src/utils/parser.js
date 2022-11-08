@@ -107,6 +107,10 @@ function observe(obj) {
   })
 }
 
+function getDataByPath(path) {
+  return 1;
+}
+
 function parseData(schema) {
   const { $defs, _event } = schema;
   return traverseForData(schema, schema, $defs, _event, "");
@@ -127,6 +131,7 @@ function traverseForData(schema, root, $defs, event, parentPath) {
         if (property.hasOwnProperty("formula")) {
           const formula = property["formula"];
           const formulaPattern = /^[A-Z]+\(.*\)$/i
+          const expressionPattern = /^\w+(\.\w+)*(\s[-+*/]\s\w+(\.\w+)*)*$/i;
           if (formulaPattern.test(formula)) {
             const [func, param] = resolveFormula(formula);
             // console.log(func, param);
@@ -134,6 +139,23 @@ function traverseForData(schema, root, $defs, event, parentPath) {
               // console.log(Formula,func,params)
               data[key] = Formula[func](...params);
             });
+          } else if (expressionPattern.test(formula)) {
+            const variableReg = /\w+(\.\w+)*/ig;
+            const operatorReg = /\s[-+*/]\s/ig
+            const variables = Array.from(new Set(formula.match(variableReg)))
+            const operators = formula.match(operatorReg);
+            console.log(variables, operators);
+            const dataMap = variables.map(v => ({ [v]: getDataByPath(`${data["_path"]}.${v}`) }))
+            console.dir(dataMap, { depth: null })
+            variables.forEach(variable => {
+              const temp = variable.split(".");
+              const member = temp.length === 1 ? temp[0] : temp[1];
+              const onevent = temp.length === 1 ? data["_path"] : `${data["_path"]}.${temp[0]}`;
+              event.on(onevent, () => {
+                const dataMap = variables.map(v => ({ v: getDataByPath(`${data["_path"]}.${v}`) }))
+                console.dir(dataMap, { depth: null })
+              })
+            })
           }
         }
       } else {
