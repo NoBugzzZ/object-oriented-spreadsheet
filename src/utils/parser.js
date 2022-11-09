@@ -107,8 +107,21 @@ function observe(obj) {
   })
 }
 
-function getDataByPath(path) {
-  return 1;
+function getDataByPath(data, path) {
+  // console.log(path);
+  const { _path } = data;
+  if (path === _path) {
+    return data;
+  } else if (path.startsWith(_path)) {
+    for (let key of Object.keys(data)) {
+      if (key === "_path") continue;
+      if (typeof data[key] === "object" && !Array.isArray(data[key])) {
+        const res = getDataByPath(data[key], path);
+        if (res) return res;
+      }
+    }
+  }
+
 }
 
 function parseData(schema) {
@@ -121,7 +134,14 @@ function traverseForData(schema, root, $defs, event, parentPath) {
   if (type === "object") {
     const { properties, title = "root" } = schema;
     const currentPath = parentPath + title;
-    const data = {};
+    let data = {};
+    data = new Proxy(data, {
+      set(target, p, newValue, receiver) {
+        const res = Reflect.set(target, p, newValue, receiver);
+        event.emit(currentPath)
+        return res;
+      }
+    })
     data["_path"] = currentPath;
     const basicType = getBasicType();
     for (let key of Object.keys(properties)) {
@@ -144,16 +164,25 @@ function traverseForData(schema, root, $defs, event, parentPath) {
             const operatorReg = /\s[-+*/]\s/ig
             const variables = Array.from(new Set(formula.match(variableReg)))
             const operators = formula.match(operatorReg);
-            console.log(variables, operators);
-            const dataMap = variables.map(v => ({ [v]: getDataByPath(`${data["_path"]}.${v}`) }))
-            console.dir(dataMap, { depth: null })
+            // console.log(variables, operators);
             variables.forEach(variable => {
               const temp = variable.split(".");
-              const member = temp.length === 1 ? temp[0] : temp[1];
+              // const member = temp.length === 1 ? temp[0] : temp[1];
               const onevent = temp.length === 1 ? data["_path"] : `${data["_path"]}.${temp[0]}`;
               event.on(onevent, () => {
-                const dataMap = variables.map(v => ({ v: getDataByPath(`${data["_path"]}.${v}`) }))
-                console.dir(dataMap, { depth: null })
+                const dataMap = variables.map(v => {
+                  const temp = v.split(".");
+                  const member = temp.length === 1 ? temp[0] : temp[1];
+                  const onevent = temp.length === 1 ? data["_path"] : `${data["_path"]}.${temp[0]}`;
+                  return { [v]: getDataByPath(data, onevent)?.[member] }
+                })
+                let expression = formula;
+                dataMap.forEach(d => {
+                  for (let key of Object.keys(d)) {
+                    expression = expression.replaceAll(key, d[key]);
+                  }
+                })
+                data[key] = Formula["CALC"](expression);
               })
             })
           }
@@ -271,8 +300,12 @@ function toSpreadSheet(schema, data, direction = "vertical") {
     const label = [{ ...BasicCell, value: key, readOnly: true }];
     spreedsheet.push(label)
     if (!Array.isArray(data[key])) {
-      const cell = [{ value: data[key] }]
-      spreedsheet.push(cell)
+      if (typeof data[key] === "object") {
+
+      } else {
+        const cell = [{ value: data[key] }]
+        spreedsheet.push(cell)
+      }
     } else {
       // console.log(data[key])
       data[key].forEach((d, index) => {
@@ -284,7 +317,7 @@ function toSpreadSheet(schema, data, direction = "vertical") {
             value: d[k],
             index,
             insert: (index = 0) => {
-              console.log("data[key][0]['_path']", data[key][0]["_path"], schema)
+              // console.log("data[key][0]['_path']", data[key][0]["_path"], schema)
               const resolvedSchema = resolveSchemaByPath(schema, data[key][0]["_path"]);
               // console.log(resolvedSchema);
               const defaultData = getDefaultData(resolvedSchema, data[key][0]["_path"])

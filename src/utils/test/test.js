@@ -16,23 +16,32 @@
 //   console.dir(toSpreadSheet(schema,data), { depth: null })
 // })()
 
+// (async () => {
+//   const { default: { parser, parseData, toSpreadSheet } } = await import("../parser.js");
+//   const { default: { Account } } = await import("../data.js")
+//   const schema = parser(Account);
+//   const data = parseData(schema);
+//   console.dir(schema, { depth: null });
+//   console.dir(data, { depth: null });
+//   const incomeItem = data.income.items[0];
+//   data.income.items.splice(1, 0, { ...incomeItem, value: 5 });
+//   incomeItem.value = 6;
+//   console.dir(data, { depth: null });
+
+//   const expenseItem = data.expense.items[0];
+//   data.expense.items.splice(1, 0, { ...expenseItem, value: 2 });
+//   expenseItem.value = 3;
+//   console.dir(data, { depth: null });
+//   const spreadsheet = toSpreadSheet(schema, data)
+//   console.dir(spreadsheet, { depth: null })
+// })()
+
+
 (async () => {
   const { default: { parser, parseData, toSpreadSheet } } = await import("../parser.js");
-  const { default: { Account } } = await import("../data.js")
-  const schema=parser(Account);
-  const data=parseData(schema);
+  const { default: { Budget } } = await import("../data.js")
+  const schema=parser(Budget);
+  const data=parseData(schema)
   console.dir(schema,{depth:null});
-  console.dir(data,{depth:null});
-  // const incomeItem=data.income.items[0];
-  // data.income.items.splice(1,0,{...incomeItem,value:2});
-  // incomeItem.value=1;
-  // console.dir(data, { depth: null });
-
-  // const expenseItem=data.expense.items[0];
-  // data.expense.items.splice(1,0,{...expenseItem,value:5});
-  // expenseItem.value=7;
-  // console.dir(data, { depth: null });
-
+  console.dir(data,{depth:null})
 })()
-
-

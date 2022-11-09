@@ -4,7 +4,7 @@ function sum(items = [], key = '') {
 
 function arithmetic(expression="1+1"){
   // eslint-disable-next-line no-new-func
-  return new Function(expression)
+  return new Function(`return ${expression}`)()
 }
 
 const Formula = {

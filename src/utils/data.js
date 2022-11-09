@@ -87,8 +87,135 @@ const Account = {
     }
   }
 }
+
+const Budget = {
+  "type": "object",
+  "title": "Budget",
+  "properties": {
+    "total": {
+      "type": "integer",
+      "formula": "SUM(Year.total)"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Category"
+      }
+    },
+    "years": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Year"
+      }
+    },
+    "cpys": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/CpY"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "CpY": {
+      "type": "object",
+      "title": "CpY",
+      "properties": {
+        "quantity": {
+          "type": "integer"
+        },
+        "cost": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer",
+          "formula": "quantity * cost"
+        }
+      }
+    },
+    "Category": {
+      "type": "object",
+      "title": "Category",
+      "properties": {
+        "name": {
+          "type": "string",
+        },
+        "total": {
+          "type": "integer",
+          "formula": "SUM(CpY.total)"
+        },
+        "CpYs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CpY"
+          }
+        }
+      }
+    },
+    "Year": {
+      "type": "object",
+      "title": "Year",
+      "properties": {
+        "year": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer",
+          "formula": "SUM(CpY.total)"
+        },
+        "CpYs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CpY"
+          }
+        }
+      }
+    }
+  }
+}
+
+const cpys = [
+  [{ quty: 0, cost: 0, total: 0 }, { quty: 0, cost: 0, total: 0 }],
+  [{ quty: 0, cost: 0, total: 0 }, { quty: 0, cost: 0, total: 0 }]
+]
+
+const BudgetData = {
+  total: 0,
+  categories: [
+    {
+      name: "pen", total: 0, cpys: [
+        { year: 2005, quty: 0, cost: 0, total: 0 },
+        { year: 2006, quty: 0, cost: 0, total: 0 },
+      ]
+    },
+    {
+      name: "pencil", total: 0, cpys: [
+        { year: 2005, quty: 0, cost: 0, total: 0 },
+        { year: 2006, quty: 0, cost: 0, total: 0 },
+      ]
+    }
+  ],
+  years: [
+    {
+      year: 2005, total: 0, cpys: [
+        { name: "pen", quty: 0, cost: 0, total: 0 },
+        { name: "pencil", quty: 0, cost: 0, total: 0 },
+      ]
+    },
+    {
+      year: 2006, total: 0, cpys: [
+        { name: "pen", quty: 0, cost: 0, total: 0 },
+        { name: "pencil", quty: 0, cost: 0, total: 0 },
+      ]
+    }
+  ]
+}
+
 const Schemas = {
   Income,
-  Account
+  Account,
+  Budget,
 }
 export default Schemas;
