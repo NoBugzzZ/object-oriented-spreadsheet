@@ -195,6 +195,22 @@ function traverseForData(schema, root, $defs, event, parentPath) {
   } else if (schema.hasOwnProperty("$ref")) {
     const refSchema = resolveRef($defs, schema["$ref"]);
     return traverseForData(refSchema, refSchema, $defs, event, parentPath);
+  } else if (type === "array" && schema?.items?.type === "array") {
+    const refSchema = resolveRef($defs, schema.items.items["$ref"]);
+    const refName = resolveRefName(schema.items.items["$ref"]);
+    const data = new Proxy([], {})
+    data.splice = new Proxy(data.splice, {
+      apply(target, thisArg, argArray) {
+        const [start,deleteCount]=argArray;
+        const template=data[0].map(d=>({...d}));
+        const proxyTemplate=new Proxy(template,{})
+        const res = Reflect.apply(target, thisArg, argArray);
+        event.emit(`${parentPath}${refName}`);
+        return res;
+      }
+    })
+    return data;
+    // console.log("#####", parentPath)
   } else if (type === "array") {
     const { items } = schema;
     if (items.hasOwnProperty("$ref")) {

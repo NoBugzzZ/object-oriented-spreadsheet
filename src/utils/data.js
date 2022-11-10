@@ -107,15 +107,6 @@ const Budget = {
       "items": {
         "$ref": "#/$defs/Year"
       }
-    },
-    "cpys": {
-      "type": "array",
-      "items": {
-        "type": "array",
-        "items": {
-          "$ref": "#/$defs/CpY"
-        }
-      }
     }
   },
   "$defs": {
@@ -147,10 +138,8 @@ const Budget = {
           "formula": "SUM(CpY.total)"
         },
         "CpYs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CpY"
-          }
+          "_from": "CpY/row",
+          "title": "test"
         }
       }
     },
@@ -166,10 +155,8 @@ const Budget = {
           "formula": "SUM(CpY.total)"
         },
         "CpYs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/CpY"
-          }
+          "_from": "CpY/col",
+          "title":"test"
         }
       }
     }
@@ -213,9 +200,27 @@ const BudgetData = {
   ]
 }
 
+const cpy = {
+  "type": "object",
+  "title": "CpY",
+  "properties": {
+    "quantity": {
+      "type": "integer"
+    },
+    "cost": {
+      "type": "integer"
+    },
+    "total": {
+      "type": "integer",
+      "formula": "quantity * cost"
+    }
+  }
+}
+
 const Schemas = {
   Income,
   Account,
   Budget,
+  cpy
 }
 export default Schemas;

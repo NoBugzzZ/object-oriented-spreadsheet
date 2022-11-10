@@ -32,8 +32,8 @@
 //   data.expense.items.splice(1, 0, { ...expenseItem, value: 2 });
 //   expenseItem.value = 3;
 //   console.dir(data, { depth: null });
-//   const spreadsheet = toSpreadSheet(schema, data)
-//   console.dir(spreadsheet, { depth: null })
+//   // const spreadsheet = toSpreadSheet(schema, data)
+//   // console.dir(spreadsheet, { depth: null })
 // })()
 
 
@@ -41,7 +41,18 @@
   const { default: { parser, parseData, toSpreadSheet } } = await import("../parser.js");
   const { default: { Budget } } = await import("../data.js")
   const schema=parser(Budget);
-  const data=parseData(schema)
+  // const data=parseData(schema)
   console.dir(schema,{depth:null});
-  console.dir(data,{depth:null})
+  // console.dir(data,{depth:null});
+  
 })()
+
+
+// (async () => {
+//   const { default: { cpy } } = await import("../data.js");
+//   const {default:CpY}=await import("../CpY.js");
+//   const instance=new CpY("C","Y",cpy);
+//   console.dir(instance,{depth:null});
+//   instance.deleteRow(1).deleteCol(1).addRow(0).addCol(0).addCol(0).addRow(0);
+//   console.dir(instance,{depth:null});
+// })()
