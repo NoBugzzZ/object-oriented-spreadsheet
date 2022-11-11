@@ -26,31 +26,31 @@ function resolveRef($defs, ref = "") {
 }
 
 function parser(schema) {
-  const { type, title, properties, $defs } = schema;
+  const { type, title, properties,  } = schema;
   const data = {};
   const event = new EventEmitter(title);
   schema["_event"] = event;
   for (let key of Object.keys(properties)) {
-    data[key] = traverse(properties[key], schema, $defs);
+    data[key] = traverse(properties[key], schema, schema);
   }
   return schema;
 }
 
-function traverse(schema, root, $defs) {
+function traverse(schema, parentSchema, root) {
   // console.dir({ schema, root, $defs })
   const { type } = schema;
   if (type === "array") {
     const { items } = schema;
     if (items.hasOwnProperty("$ref")) {
-      if (!(root.hasOwnProperty("_refs"))) {
-        root["_refs"] = [];
+      if (!(parentSchema.hasOwnProperty("_refs"))) {
+        parentSchema["_refs"] = [];
       }
-      root["_refs"].push({ type: "array", ref: items["$ref"] });
+      parentSchema["_refs"].push({ type: "array", ref: items["$ref"] });
       // console.dir()
-      const refSchema = resolveRef($defs, items["$ref"]);
+      const refSchema = resolveRef(root.$defs, items["$ref"]);
       const { properties } = refSchema;
       for (let key of Object.keys(properties)) {
-        traverse(properties[key], refSchema, $defs);
+        traverse(properties[key], refSchema, root.$defs);
       }
       // console.log(data);
       // return [data]
@@ -58,22 +58,22 @@ function traverse(schema, root, $defs) {
       // traverse(items, root, $defs, refs);
     }
   } else if (schema.hasOwnProperty("$ref")) {
-    if (!(root.hasOwnProperty("_refs"))) {
-      root["_refs"] = [];
+    if (!(parentSchema.hasOwnProperty("_refs"))) {
+      parentSchema["_refs"] = [];
     }
-    root["_refs"].push({ type: "object", ref: schema["$ref"] });
-    const refSchema = resolveRef($defs, schema["$ref"]);
+    parentSchema["_refs"].push({ type: "object", ref: schema["$ref"] });
+    const refSchema = resolveRef(root.$defs, schema["$ref"]);
     const { properties } = refSchema;
     for (let key of Object.keys(properties)) {
-      traverse(properties[key], refSchema, $defs);
+      traverse(properties[key], refSchema, root.$defs);
     }
   } else {
     // return getDefault(type);
     if (schema.hasOwnProperty("formula")) {
-      if (!(root.hasOwnProperty("_formulas"))) {
-        root["_formulas"] = [];
+      if (!(parentSchema.hasOwnProperty("_formulas"))) {
+        parentSchema["_formulas"] = [];
       }
-      root["_formulas"].push({ formula: schema["formula"] })
+      parentSchema["_formulas"].push({ formula: schema["formula"] })
     }
   }
 }
