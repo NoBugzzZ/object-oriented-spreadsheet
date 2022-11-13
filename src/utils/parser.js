@@ -2,6 +2,14 @@
 // const { Formula } = require("./Function");
 import EventEmitter from "./Event.js"
 import Formula from "./Function.js";
+import CpY from "./CpY.js";
+
+function getClass(className) {
+  const mapper = {
+    "CpY": CpY
+  }
+  return mapper[className];
+}
 
 function getDefault(type) {
   const mapper = {
@@ -25,8 +33,15 @@ function resolveRef($defs, ref = "") {
   }
 }
 
+function resolveFrom(from) {
+  const froms = from.split("/");
+  const className = froms[0];
+  const context = froms[1];
+  return [className, context];
+}
+
 function parser(schema) {
-  const { type, title, properties,  } = schema;
+  const { type, title, properties, } = schema;
   const data = {};
   const event = new EventEmitter(title);
   schema["_event"] = event;
@@ -50,7 +65,7 @@ function traverse(schema, parentSchema, root) {
       const refSchema = resolveRef(root.$defs, items["$ref"]);
       const { properties } = refSchema;
       for (let key of Object.keys(properties)) {
-        traverse(properties[key], refSchema, root.$defs);
+        traverse(properties[key], refSchema, root);
       }
       // console.log(data);
       // return [data]
@@ -65,7 +80,24 @@ function traverse(schema, parentSchema, root) {
     const refSchema = resolveRef(root.$defs, schema["$ref"]);
     const { properties } = refSchema;
     for (let key of Object.keys(properties)) {
-      traverse(properties[key], refSchema, root.$defs);
+      traverse(properties[key], refSchema, root);
+    }
+  } else if (schema.hasOwnProperty("_from")) {
+    if (!root.hasOwnProperty("_classes")) {
+      root["_classes"] = {};
+    }
+    const classes = root["_classes"];
+    const { title, _from, schema: refPath } = schema;
+    const [className, context] = resolveFrom(_from);
+    console.log(title, _from, refPath, className, context)
+    const { title: parentTitle } = parentSchema;
+
+    if (classes.hasOwnProperty(title)) {
+      if (classes[title].path === refPath) {
+        classes[title] = { ...classes[title], [context]: parentTitle };
+      }
+    } else {
+      classes[title] = { path: refPath, [context]: parentTitle, className };
     }
   } else {
     // return getDefault(type);
@@ -126,15 +158,19 @@ function getDataByPath(data, path) {
 
 function parseData(schema) {
   const { $defs, _event } = schema;
-  return traverseForData(schema, schema, $defs, _event, "");
+  let rootData;
+  return traverseForData(schema, schema, schema, _event, "", rootData);
 }
 
-function traverseForData(schema, root, $defs, event, parentPath) {
+function traverseForData(schema, parentSchema, rootSchema, event, parentPath, rootData) {
   const { type } = schema;
   if (type === "object") {
     const { properties, title = "root" } = schema;
     const currentPath = parentPath + title;
     let data = {};
+    if (!rootData) {
+      rootData = data;
+    }
     data = new Proxy(data, {
       set(target, p, newValue, receiver) {
         const res = Reflect.set(target, p, newValue, receiver);
@@ -145,6 +181,7 @@ function traverseForData(schema, root, $defs, event, parentPath) {
     data["_path"] = currentPath;
     const basicType = getBasicType();
     for (let key of Object.keys(properties)) {
+      // console.log("####", currentPath, key)
       const property = properties[key];
       if (basicType.includes(property["type"])) {
         data[key] = getDefault(property["type"]);
@@ -188,22 +225,23 @@ function traverseForData(schema, root, $defs, event, parentPath) {
           }
         }
       } else {
-        data[key] = traverseForData(properties[key], root, $defs, event, `${data["_path"]}.`);
+        // console.log("----", currentPath, key)
+        data[key] = traverseForData(properties[key], parentSchema, rootSchema, event, `${data["_path"]}.`, rootData);
       }
     }
     return data;
   } else if (schema.hasOwnProperty("$ref")) {
-    const refSchema = resolveRef($defs, schema["$ref"]);
-    return traverseForData(refSchema, refSchema, $defs, event, parentPath);
+    const refSchema = resolveRef(rootSchema.$defs, schema["$ref"]);
+    return traverseForData(refSchema, refSchema, rootSchema, event, parentPath, rootData);
   } else if (type === "array" && schema?.items?.type === "array") {
-    const refSchema = resolveRef($defs, schema.items.items["$ref"]);
+    const refSchema = resolveRef(rootSchema.$defs, schema.items.items["$ref"]);
     const refName = resolveRefName(schema.items.items["$ref"]);
     const data = new Proxy([], {})
     data.splice = new Proxy(data.splice, {
       apply(target, thisArg, argArray) {
-        const [start,deleteCount]=argArray;
-        const template=data[0].map(d=>({...d}));
-        const proxyTemplate=new Proxy(template,{})
+        const [start, deleteCount] = argArray;
+        const template = data[0].map(d => ({ ...d }));
+        const proxyTemplate = new Proxy(template, {})
         const res = Reflect.apply(target, thisArg, argArray);
         event.emit(`${parentPath}${refName}`);
         return res;
@@ -215,9 +253,9 @@ function traverseForData(schema, root, $defs, event, parentPath) {
     const { items } = schema;
     if (items.hasOwnProperty("$ref")) {
       let data = new Proxy([], {});
-      const refSchema = resolveRef($defs, items["$ref"]);
+      const refSchema = resolveRef(rootSchema.$defs, items["$ref"]);
       const refName = resolveRefName(items["$ref"]);
-      const { _formulas: formulas } = root;
+      const { _formulas: formulas } = parentSchema;
       for (let formula of formulas) {
         const [func, param] = resolveFormula(formula.formula);
         if (param[0] === refName) {
@@ -246,10 +284,28 @@ function traverseForData(schema, root, $defs, event, parentPath) {
           break;
         }
       }
-      data.splice(0, 0, traverseForData(refSchema, refSchema, $defs, event, `${parentPath}[].`));
+      data.splice(0, 0, traverseForData(refSchema, refSchema, rootSchema, event, `${parentPath}[].`, rootData));
       return data
     } else {
       // traverse(items, root, $defs, refs);
+    }
+  } else if (schema.hasOwnProperty("_from")) {
+    const { _classes } = rootSchema;
+
+    for (let [key, value] of Object.entries(_classes)) {
+      if (schema.title === key) {
+        const { path, row, col, className } = value;
+        if (!rootData.hasOwnProperty(key)) {
+          const refSchema = resolveRef(rootSchema.$defs, path);
+          const Class = getClass(className);
+          rootData[key] = new Class(row, col, refSchema);
+        }
+        if (parentSchema.title == row) {
+          return rootData[key].getRow(0)
+        } else {
+          return rootData[key].getCol(0)
+        }
+      }
     }
   }
 }

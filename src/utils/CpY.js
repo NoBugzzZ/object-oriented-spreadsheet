@@ -14,7 +14,7 @@ class CpY {
   getRow(index) {
     const rowNum = this.data.length;
     const getIndex = typeof index == "number" ? index : rowNum - 1;
-    return this.data[getIndex];
+    return [...this.data[getIndex]];
   }
   getCol(index){
     const rowNum = this.data.length;

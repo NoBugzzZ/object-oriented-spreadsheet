@@ -41,9 +41,9 @@
   const { default: { parser, parseData, toSpreadSheet } } = await import("../parser.js");
   const { default: { Budget } } = await import("../data.js")
   const schema=parser(Budget);
-  // const data=parseData(schema)
+  const data=parseData(schema)
   console.dir(schema,{depth:null});
-  // console.dir(data,{depth:null});
+  console.dir(data,{depth:null});
   
 })()
 

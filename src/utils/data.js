@@ -139,6 +139,7 @@ const Budget = {
         },
         "CpYs": {
           "_from": "CpY/row",
+          "schema":"#/$defs/CpY",
           "title": "test"
         }
       }
@@ -156,6 +157,7 @@ const Budget = {
         },
         "CpYs": {
           "_from": "CpY/col",
+          "schema":"#/$defs/CpY",
           "title":"test"
         }
       }
