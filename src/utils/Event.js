@@ -14,7 +14,7 @@ class EventEmitter {
     if (this.queue.hasOwnProperty(event)) {
       this.queue[event].forEach(callback => callback(...params))
     }
-    console.log("emit", event, params)
+    console.log("emit", event)
   }
 }
 export default EventEmitter;

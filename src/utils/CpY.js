@@ -1,14 +1,17 @@
 import Formula from "./Function.js";
 
 class CpY {
-  constructor(row, col, schema) {
+  constructor(row, col, schema,event,basicPath,title) {
     this.row = row;
     this.col = col;
+    this.event=event;
+    this.basicPath=basicPath;
+    this.title=title;
     this.schema = this.resolveSchema(schema);
     const data = this.getDefault(this.schema);
-    const proxy = this.getProxy(this.schema, data);
-    proxy.quantity = 2;
-    proxy.cost = 6;
+    const proxy = this.getProxy(this.schema, data,this.event,this.basicPath,this.row,this.col);
+    proxy.quantity = 0;
+    proxy.cost = 0;
     this.data = [[proxy]];
   }
   getRow(index) {
@@ -33,10 +36,11 @@ class CpY {
     const row = [];
     for (let i = 0; i < colNum; i++) {
       const data = this.getDefault(this.schema);
-      const proxy = this.getProxy(this.schema, data);
+      const proxy = this.getProxy(this.schema, data,this.event,this.basicPath,this.row,this.col);
       row.push(proxy);
     }
     this.data.splice(insertIndex, 0, row);
+    this.event.emit(`#/${this.title}`)
     return this;
   }
   addCol(index) {
@@ -45,9 +49,10 @@ class CpY {
     const insertIndex = typeof index == "number" ? index : colNum;
     for (let i = 0; i < rowNum; i++) {
       const data = this.getDefault(this.schema);
-      const proxy = this.getProxy(this.schema, data);
+      const proxy = this.getProxy(this.schema, data,this.event,this.basicPath,this.row,this.col);
       this.data[i].splice(insertIndex, 0, proxy);
     }
+    this.event.emit(`#/${this.title}`)
     return this;
   }
   deleteRow(index) {
@@ -90,12 +95,14 @@ class CpY {
     }
     return schema;
   }
-  getProxy(schema, data) {
+  getProxy(schema, data,event,basicPath,row,col) {
     const { _formulas } = schema;
     const proxy = new Proxy(data, {
       set(target, p, newValue, receiver) {
-        console.log(p, newValue)
+        // console.log(p, newValue)
         const res = Reflect.set(target, p, newValue, receiver);
+        event.emit(`${basicPath}${row}.CpY`);
+        event.emit(`${basicPath}${col}.CpY`)
         _formulas.forEach(f => {
           const { func } = f;
           if (func === "CALC") {
