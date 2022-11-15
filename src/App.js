@@ -6,7 +6,7 @@ import Parser from './utils/parser';
 import Schemas from "./utils/data"
 
 const { parser, parseData, toSpreadSheet } = Parser
-const { Income } = Schemas;
+const { Income,Budget } = Schemas;
 function App() {
   const [grid, setGrid] = useState([]);
   const [schema, setSchema] = useState(null);
@@ -14,7 +14,7 @@ function App() {
   const [currentPos, setCurrentPos] = useState({ row: -1, col: -1 });
   useEffect(() => {
     console.log(Income)
-    const schema = parser(Income);
+    const schema = parser(Budget);
     const data = parseData(schema);
     const spreadsheet = toSpreadSheet(schema, data)
     console.log(schema);
@@ -45,7 +45,7 @@ function App() {
         valueRenderer={cell => cell.value}
         onCellsChanged={changes => {
           changes.forEach(({ cell, row, col, value }) => {
-            grid[row][col].update(+value);
+            grid[row][col].update(value);
           });
           setGrid(toSpreadSheet(schema, data))
           // const grid = this.state.grid.map(row => [...row]);
