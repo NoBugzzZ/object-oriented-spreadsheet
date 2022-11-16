@@ -484,157 +484,157 @@ function tdaToSpreadSheet(data) {
   return [res, len];
 }
 
-function toSpreadSheet(schema, data, direction = "cross") {
-  const spreadsheet = [];
-  const [instanceTitle, context] = Object.entries(schema["_classes"])[0];
-  console.log(instanceTitle, context)
-  const { row, col } = context;
-  const instance = data[instanceTitle];
-  const [tda, lenPerData] = tdaToSpreadSheet(instance.data)
-  console.dir(tda, { depth: null });
-  const queue = [];
-  let offsetX = 0;
-  let offsetY = 0;
-  for (let [key, value] of Object.entries(data)) {
-    if (key.startsWith("_") || key === instanceTitle) continue;
-    console.log(key);
-    if (typeof value === "object") {
-      const rowOrColArray=value;
-      if (value["_path"].endsWith(row)) {
-        const template = Object.entries(value[0])
-          .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
-        offsetX = template.length
-        for (let i = 0; i < offsetY; i++) {
-          for (let n = 0; n < offsetX; n++) {
-            tda[i].splice(n, 0, { ...BasicCell });
-          }
-        }
-        template.forEach(([key, value], i) => {
-          tda[offsetY].splice(i, 0, { ...BasicCell, value: key, readOnly: true });
-        })
-        value.forEach((obj, index) => {
-          Object.entries(obj)
-            .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
-            .forEach(([key, value], i) => {
-              tda[offsetY + 1 + index].splice(i, 0, {
-                ...BasicCell, value,
-                update: (value) => {
-                  if (typeof obj[key] === "number") {
-                    obj[key] = + value;
-                  } else {
-                    obj[key] = value;
-                  }
-                },
-                insert:(index)=>{
-                  rowOrColArray.splice(rowOrColArray.length,0)
-                }
-              });
-            })
-        })
-      } else if (value["_path"].endsWith(col)) {
-        const template = Object.entries(value[0])
-          .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"));
-        const offsetY = template.length;
-        for (let i = 0; i < offsetY; i++) {
-          const row = []
-          for (let n = 0; n < offsetX; n++) {
-            row.splice(n, 0, { ...BasicCell });
-          }
-          for (let n = offsetX, totalCol = offsetX + value.length * lenPerData; n < totalCol; n++) {
-            row.splice(n, 0, { ...BasicCell });
-          }
-          tda.splice(i, 0, row);
-        }
-        // eslint-disable-next-line no-loop-func
-        value.forEach((obj, index) => {
-          Object.entries(obj)
-            .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
-            .forEach(([key, value], i) => {
-              let valueCell=null;
-              if (offsetY <= lenPerData) {
-                tda[i][index * lenPerData + offsetX]={
-                  ...tda[i][index * lenPerData + offsetX],
-                  value:key,
-                  readOnly:true
-                }
-                valueCell=tda[i][index * lenPerData + offsetX + 1]
-              } else {
-                valueCell=tda[i][index * lenPerData + offsetX]
-              }
-              valueCell.value=value;
-              valueCell.update=(value)=>{
-                if (typeof obj[key] === "number") {
-                  obj[key] = + value;
-                } else {
-                  obj[key] = value;
-                }
-              }
-              valueCell.insert=(index)=>{
-                rowOrColArray.splice(rowOrColArray.length,0)
-              }
-            })
-        })
-      }
-    } else {
-      queue.push(key);
-    }
-  }
-  const aRow = [];
-  const len = tda[0].length
-  for (let i = 0; i < len; i++) {
-    aRow.push({ ...BasicCell });
-  }
-  aRow[len - 2].value = queue[0];
-  aRow[len - 2].readOnly = true;
-  aRow[len - 1].value = data[queue[0]];
-  tda.push(aRow);
-  return tda;
-}
-
-// function toSpreadSheet(schema, data, direction = "vertical") {
-//   const { title = "Root", properties } = schema;
-//   const spreedsheet = [];
-//   spreedsheet.push([{ ...BasicCell, value: title, readOnly: true }]);
-//   for (let key of Object.keys(data)) {
-//     if (key.startsWith("_")) continue;
-//     const label = [{ ...BasicCell, value: key, readOnly: true }];
-//     spreedsheet.push(label)
-//     if (!Array.isArray(data[key])) {
-//       if (typeof data[key] === "object") {
-
-//       } else {
-//         const cell = [{ value: data[key] }]
-//         spreedsheet.push(cell)
+// function toSpreadSheet(schema, data, direction = "cross") {
+//   const spreadsheet = [];
+//   const [instanceTitle, context] = Object.entries(schema["_classes"])[0];
+//   console.log(instanceTitle, context)
+//   const { row, col } = context;
+//   const instance = data[instanceTitle];
+//   const [tda, lenPerData] = tdaToSpreadSheet(instance.data)
+//   console.dir(tda, { depth: null });
+//   const queue = [];
+//   let offsetX = 0;
+//   let offsetY = 0;
+//   for (let [key, value] of Object.entries(data)) {
+//     if (key.startsWith("_") || key === instanceTitle) continue;
+//     console.log(key);
+//     if (typeof value === "object") {
+//       const rowOrColArray=value;
+//       if (value["_path"].endsWith(row)) {
+//         const template = Object.entries(value[0])
+//           .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
+//         offsetX = template.length
+//         for (let i = 0; i < offsetY; i++) {
+//           for (let n = 0; n < offsetX; n++) {
+//             tda[i].splice(n, 0, { ...BasicCell });
+//           }
+//         }
+//         template.forEach(([key, value], i) => {
+//           tda[offsetY].splice(i, 0, { ...BasicCell, value: key, readOnly: true });
+//         })
+//         value.forEach((obj, index) => {
+//           Object.entries(obj)
+//             .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
+//             .forEach(([key, value], i) => {
+//               tda[offsetY + 1 + index].splice(i, 0, {
+//                 ...BasicCell, value,
+//                 update: (value) => {
+//                   if (typeof obj[key] === "number") {
+//                     obj[key] = + value;
+//                   } else {
+//                     obj[key] = value;
+//                   }
+//                 },
+//                 insert:(index)=>{
+//                   rowOrColArray.splice(rowOrColArray.length,0)
+//                 }
+//               });
+//             })
+//         })
+//       } else if (value["_path"].endsWith(col)) {
+//         const template = Object.entries(value[0])
+//           .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"));
+//         const offsetY = template.length;
+//         for (let i = 0; i < offsetY; i++) {
+//           const row = []
+//           for (let n = 0; n < offsetX; n++) {
+//             row.splice(n, 0, { ...BasicCell });
+//           }
+//           for (let n = offsetX, totalCol = offsetX + value.length * lenPerData; n < totalCol; n++) {
+//             row.splice(n, 0, { ...BasicCell });
+//           }
+//           tda.splice(i, 0, row);
+//         }
+//         // eslint-disable-next-line no-loop-func
+//         value.forEach((obj, index) => {
+//           Object.entries(obj)
+//             .filter(([key, value]) => !key.startsWith("_") && !(typeof value === "object"))
+//             .forEach(([key, value], i) => {
+//               let valueCell=null;
+//               if (offsetY <= lenPerData) {
+//                 tda[i][index * lenPerData + offsetX]={
+//                   ...tda[i][index * lenPerData + offsetX],
+//                   value:key,
+//                   readOnly:true
+//                 }
+//                 valueCell=tda[i][index * lenPerData + offsetX + 1]
+//               } else {
+//                 valueCell=tda[i][index * lenPerData + offsetX]
+//               }
+//               valueCell.value=value;
+//               valueCell.update=(value)=>{
+//                 if (typeof obj[key] === "number") {
+//                   obj[key] = + value;
+//                 } else {
+//                   obj[key] = value;
+//                 }
+//               }
+//               valueCell.insert=(index)=>{
+//                 rowOrColArray.splice(rowOrColArray.length,0)
+//               }
+//             })
+//         })
 //       }
 //     } else {
-//       // console.log(data[key])
-//       data[key].forEach((d, index) => {
-//         const cell = [];
-//         for (let k of Object.keys(d)) {
-//           if (k.startsWith("_")) continue;
-//           cell.push({
-//             ...BasicCell,
-//             value: d[k],
-//             index,
-//             insert: (index = 0) => {
-//               // console.log("data[key][0]['_path']", data[key][0]["_path"], schema)
-//               const resolvedSchema = resolveSchemaByPath(schema, data[key][0]["_path"]);
-//               // console.log(resolvedSchema);
-//               const defaultData = getDefaultData(resolvedSchema, data[key][0]["_path"])
-//               // console.log(defaultData)
-//               data[key].splice(index, 0)
-//             },
-//             update: (value) => { d[k] = value },
-//             delete: (index = 0) => { data[key].splice(index, 1) }
-//           })
-//         }
-//         spreedsheet.push(cell)
-//       })
-
+//       queue.push(key);
 //     }
 //   }
-//   return spreedsheet;
+//   const aRow = [];
+//   const len = tda[0].length
+//   for (let i = 0; i < len; i++) {
+//     aRow.push({ ...BasicCell });
+//   }
+//   aRow[len - 2].value = queue[0];
+//   aRow[len - 2].readOnly = true;
+//   aRow[len - 1].value = data[queue[0]];
+//   tda.push(aRow);
+//   return tda;
 // }
+
+function toSpreadSheet(schema, data, direction = "vertical") {
+  const { title = "Root", properties } = schema;
+  const spreedsheet = [];
+  spreedsheet.push([{ ...BasicCell, value: title, readOnly: true }]);
+  for (let key of Object.keys(data)) {
+    if (key.startsWith("_")) continue;
+    const label = [{ ...BasicCell, value: key, readOnly: true }];
+    spreedsheet.push(label)
+    if (!Array.isArray(data[key])) {
+      if (typeof data[key] === "object") {
+
+      } else {
+        const cell = [{ value: data[key] }]
+        spreedsheet.push(cell)
+      }
+    } else {
+      // console.log(data[key])
+      data[key].forEach((d, index) => {
+        const cell = [];
+        for (let k of Object.keys(d)) {
+          if (k.startsWith("_")) continue;
+          cell.push({
+            ...BasicCell,
+            value: d[k],
+            index,
+            insert: (index = 0) => {
+              // console.log("data[key][0]['_path']", data[key][0]["_path"], schema)
+              const resolvedSchema = resolveSchemaByPath(schema, data[key][0]["_path"]);
+              // console.log(resolvedSchema);
+              const defaultData = getDefaultData(resolvedSchema, data[key][0]["_path"])
+              // console.log(defaultData)
+              data[key].splice(index, 0)
+            },
+            update: (value) => { d[k] = value },
+            delete: (index = 0) => { data[key].splice(index, 1) }
+          })
+        }
+        spreedsheet.push(cell)
+      })
+
+    }
+  }
+  return spreedsheet;
+}
 
 // const spreadsheet=toSpreadSheet(data)
 
