@@ -10,7 +10,7 @@ const Income = {
     },
     total: {
       type: "integer",
-      formula: "SUM(Item.value)",
+      _formula: "SUM(Item.value)",
     },
   },
   $defs: {
@@ -33,7 +33,7 @@ const Account = {
   "properties": {
     "netEarning": {
       "type": "integer",
-      "formula": "Income.total - Expense.total"
+      "_formula": "Income.total - Expense.total"
     },
     "income": {
       "$ref": "#/$defs/Income"
@@ -59,7 +59,7 @@ const Account = {
       "properties": {
         "total": {
           "type": "integer",
-          "formula": "SUM(Item.value)",
+          "_formula": "SUM(Item.value)",
         },
         "items": {
           "type": "array",
@@ -75,7 +75,7 @@ const Account = {
       "properties": {
         "total": {
           "type": "integer",
-          "formula": "SUM(Item.value)",
+          "_formula": "SUM(Item.value)",
         },
         "items": {
           "type": "array",
@@ -94,7 +94,7 @@ const Budget = {
   "properties": {
     "total": {
       "type": "integer",
-      "formula": "SUM(Year.total)"
+      "_formula": "SUM(Year.total)"
     },
     "categories": {
       "type": "array",
@@ -122,7 +122,7 @@ const Budget = {
         },
         "total": {
           "type": "integer",
-          "formula": "quantity * cost"
+          "_formula": "quantity * cost"
         }
       }
     },
@@ -135,11 +135,11 @@ const Budget = {
         },
         "total": {
           "type": "integer",
-          "formula": "SUM(CpY.total)"
+          "_formula": "SUM(CpY.total)"
         },
         "CpYs": {
           "_from": "CpY/row",
-          "schema":"#/$defs/CpY",
+          "_schema": "#/$defs/CpY",
           "title": "test"
         }
       }
@@ -153,12 +153,12 @@ const Budget = {
         },
         "total": {
           "type": "integer",
-          "formula": "SUM(CpY.total)"
+          "_formula": "SUM(CpY.total)"
         },
         "CpYs": {
           "_from": "CpY/col",
-          "schema":"#/$defs/CpY",
-          "title":"test"
+          "_schema": "#/$defs/CpY",
+          "title": "test"
         }
       }
     }
@@ -214,7 +214,7 @@ const cpy = {
     },
     "total": {
       "type": "integer",
-      "formula": "quantity * cost"
+      "_formula": "quantity * cost"
     }
   }
 }
