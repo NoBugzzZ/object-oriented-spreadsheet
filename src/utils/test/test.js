@@ -78,6 +78,23 @@
 (async () => {
   const { default: { parse } } = await import("../parser.refactor.js");
   const { default: { Income,Account,Budget } } = await import("../data.js")
-  const root = parse(Budget);
-  console.dir(root, { depth: null });
+  const root = parse(Income);
+  // console.dir(root, { depth: null });
+  // const data=root.entry.data;
+  // console.dir(data,{depth:null})
+  // data.total=2;
+  // console.log(root.entry.data)
+  console.dir(root,{depth:null})
 })()
+
+// (async () => {
+//   const { default: { cpy } } = await import("../data.js");
+//   const { default: TwoDimensionArray } = await import("../TwoDimensionArray.refactor.js");
+//   const instance = new TwoDimensionArray("Category", "Year", cpy, "test");
+//   console.dir(instance, { depth: null });
+//   instance.data[0][0].quantity = 2;
+//   instance.data[0][0].cost = 3;
+//   instance.addCategory(0).addYear(0);
+//   // instance.deleteRow(0).deleteCol(0).addRow(0).addCol(0).addCol(0).addRow(0).deleteRow(1).deleteCol(1);
+//   console.dir(instance, { depth: null });
+// })()

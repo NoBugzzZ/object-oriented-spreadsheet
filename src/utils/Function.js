@@ -1,5 +1,5 @@
-function sum(items = [], key = '') {
-  return items.reduce((prev, cur) => prev + cur[key], 0);
+function sum(...items) {
+  return items.reduce((prev, cur) => prev + cur, 0);
 }
 
 function arithmetic(expression="1+1"){

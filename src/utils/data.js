@@ -138,7 +138,7 @@ const Budget = {
           "_formula": "SUM(CpY.total)"
         },
         "CpYs": {
-          "_from": "CpY/row",
+          "_from": "TwoDimensionArray/row",
           "_schema": "#/$defs/CpY",
           "title": "test"
         }
@@ -156,7 +156,7 @@ const Budget = {
           "_formula": "SUM(CpY.total)"
         },
         "CpYs": {
-          "_from": "CpY/col",
+          "_from": "TwoDimensionArray/col",
           "_schema": "#/$defs/CpY",
           "title": "test"
         }
