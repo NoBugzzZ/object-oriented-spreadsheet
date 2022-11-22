@@ -2,7 +2,6 @@ import Formula from "./Function.js";
 
 class TwoDimensionArray {
   constructor(row, col, schema, title) {
-    console.log(row, col, schema, title)
     this.row = row;
     this.col = col;
     this.title = title;

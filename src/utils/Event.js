@@ -8,13 +8,13 @@ class EventEmitter {
       this.queue[event] = [];
     }
     this.queue[event].push(callback);
-    // console.log("on", event);
+    console.log("[on] ", event);
   }
-  emit(event, ...params) {
+  emit(event) {
+    console.log("[emit]", event)
     if (this.queue.hasOwnProperty(event)) {
-      this.queue[event].forEach(callback => callback(...params))
+      this.queue[event].forEach(callback => callback())
     }
-    // console.log("emit", event)
   }
 }
 export default EventEmitter;

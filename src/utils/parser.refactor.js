@@ -56,31 +56,40 @@ function constructContext(root) {
 function parse(schema) {
   const root = { entry: null, context: {}, event: null };
   root.event = new EventEmitter(schema.title);
-  root.entry = parseSchema(schema, null, schema, root);
+  root.entry = parseSchema(schema, null, schema, root, "");
   constructContext(root);
-  const rootData = {};
-  parseData(rootData, root.entry, root);
-  return rootData;
+  const rootData = parseData(root.entry, root);
+  return [root, rootData];
 }
 
-function parseSchema(schema, parent, rootSchema, root) {
+function parseSchema(schema, parent, rootSchema, root, parentPath, key) {
   const _schema = schema.hasOwnProperty("$ref") ?
     resolveRef(schema["$ref"], rootSchema["$defs"]) : schema;
   const { type } = _schema;
-  const entry = { schema: _schema, data: null, children: null, parent };
+  const entry = {
+    schema: _schema,
+    data: null,
+    children: null,
+    parent
+  };
   if (type === "object") {
+    entry.path = `${parentPath}${_schema.title}`
     entry.children = {};
     for (let [key, value] of Object.entries(_schema.properties)) {
-      entry.children[key] = parseSchema(value, entry, rootSchema, root);
+      entry.children[key] = parseSchema(value, entry, rootSchema, root, `${entry.path}.`, key);
     }
   } else if (type === "array") {
     let itemShema = _schema.items.hasOwnProperty("$ref") ?
       resolveRef(_schema.items["$ref"], rootSchema["$defs"]) : _schema.items;
+    entry.path = `${parentPath}${itemShema.title}`
     entry.children = [];
-    entry.children.splice(0, 0, parseSchema(itemShema, entry, rootSchema, root));
+    entry.children.splice(0, 0, parseSchema(itemShema, entry, rootSchema, root, parentPath, 0));
   } else if (isBasicType(type)) {
-
+    entry.path = parentPath.slice(0, parentPath.length - 1);
+    entry.key = key;
   } else if (_schema.hasOwnProperty("_from")) {
+    entry.path = parentPath.slice(0, parentPath.length - 1);
+    entry.key = key;
     resolveContext(_schema, parent, root);
   }
   return entry;
@@ -98,7 +107,6 @@ function getDefault(type) {
 }
 
 function resolveFormula(formula = "") {
-  // console.log("###",formula)
   const start = formula.indexOf("(");
   const end = formula.lastIndexOf(")");
   const param = formula.slice(start + 1, end).split(".");
@@ -106,7 +114,10 @@ function resolveFormula(formula = "") {
   return [func, param];
 }
 
-function parseFormula(entry, root) {
+function parseFormula(entry, root, parentData) {
+  const res = {
+    value: getDefault(entry.schema.type)
+  }
   const { schema: { _formula } } = entry;
   const formulaPattern = /^[A-Z]+\(.*\)$/i
   const expressionPattern = /^\w+(\.\w+)*(\s[-+*/]\s\w+(\.\w+)*)*$/i;
@@ -114,32 +125,60 @@ function parseFormula(entry, root) {
     const [func, param] = resolveFormula(_formula);
     if (param.length === 2) {
       for (let [key, value] of Object.entries(entry.parent.children)) {
-        if (value.schema.type === "array" &&
-          value.schema.items["$ref"].endsWith(param[0])) {
-          entry.data = Formula[func](...value.data.map(d => d[param[1]]))
-        } else if (value.schema.type === "object") {
-
+        if (value?.path?.endsWith(param[0]) && value.schema.type === "array") {
+          root.event.on(`${value.path}`, () => {
+            res.value = Formula[func](...parentData[key].map(d => d[param[1]].value));
+            root.event.emit(`${entry.path}.${entry.key}`)
+          });
+          root.event.on(`${value.path}.${param[1]}`, () => {
+            res.value = Formula[func](...parentData[key].map(d => d[param[1]].value));
+            root.event.emit(`${entry.path}.${entry.key}`)
+          });
         }
       }
-    } else {
-
     }
   } else if (expressionPattern.test(_formula)) {
     const variableReg = /\w+(\.\w+)*/ig;
     const operatorReg = /\s[-+*/]\s/ig
     const variables = Array.from(new Set(_formula.match(variableReg)))
     const operators = _formula.match(operatorReg);
-
+    variables.forEach(variable => {
+      root.event.on(`${entry.path}.${variable}`, () => {
+        const dataMap = variables.map(v => {
+          const param = v.split(".");
+          if (param.length === 1) {
+            for (let [key, value] of Object.entries(entry.parent.children)) {
+              if (key === param[0]) {
+                return { [v]: parentData[key].value }
+              }
+            }
+          } else if (param.length === 2) {
+            for (let [key, value] of Object.entries(entry.parent.children)) {
+              if (value.path.endsWith(param[0])) {
+                return { [v]: parentData[key][param[1]].value }
+              }
+            }
+          }
+        })
+        let expression = _formula;
+        dataMap.forEach(d => {
+          for (let key of Object.keys(d)) {
+            expression = expression.replaceAll(key, d[key]);
+          }
+        })
+        res.value = Formula["CALC"](expression);
+        root.event.emit(`${entry.path}.${entry.key}`)
+      })
+    })
   }
+  return res;
 }
 
 function propagation(entry) {
   let temp = entry;
   while (temp) {
-    // console.log(temp)
     for (let [k, v] of Object.entries(temp.children)) {
       const { schema } = v;
-      // console.log(schema)
       if (schema.hasOwnProperty("_formula")) {
         parseFormula(v, null);
       } else if (schema.type === "array") {
@@ -188,34 +227,80 @@ function changeData(entry, p, newValue) {
   }
 }
 
+function toTypeValue(value, type) {
+  switch (type) {
+    case "string":
+      return `${value}`
+    case "integer":
+      return parseInt(value);
+    case "number":
+      return Number(value);
+    case "boolean":
+      return Boolean(value);
+    case "null":
+      return null;
+    default:
+      return "";
+  }
+}
 
-function parseData(rootData, entry, root) {
+function observeSplice(obj, entry, root) {
+  obj.splice = new Proxy(obj.splice, {
+    apply(target, thisArg, argArray) {
+      let res;
+      const [start, deleteCount] = argArray;
+      if (deleteCount === 0) {
+        const item = parseData(entry.children[0], root);
+        res = Reflect.apply(target, thisArg, [start, deleteCount, item]);
+      } else if (deleteCount >= obj.length) {
+        return;
+      } else {
+        res = Reflect.apply(target, thisArg, argArray);
+      }
+      root.event.emit(entry.path)
+      return res;
+    }
+  })
+}
+
+function addFunction(obj) {
+  obj.insert = function (start) {
+    this.splice(start, 0);
+  }
+  obj.delete = function (start, deleteCount = 1) {
+    this.splice(start, deleteCount);
+  }
+}
+
+function parseData(entry, root, parentData) {
   const { children, schema } = entry;
   if (children === null) {
     if (schema.hasOwnProperty("_formula")) {
-      parseFormula(entry, root);
+      return parseFormula(entry, root, parentData);
+    } else if (schema.hasOwnProperty("_from")) {
+
     } else {
-      entry.data = getDefault(schema.type);
+      return {
+        value: getDefault(schema.type),
+        update: function (value) {
+          this.value = toTypeValue(value, schema.type)
+          root.event.emit(`${entry.path}.${entry.key}`)
+        }
+      }
     }
   } else {
-    for (let [key, value] of Object.entries(children)) {
-      parseData(value, root);
-    }
     if (schema.type === "array") {
-      entry.data = entry.children.map(child => child.data);
-      // entry.data[Symbol.for("entry")] = entry;
+      const res = [];
+      res.push(parseData(entry.children[0], root, res));
+      observeSplice(res, entry, root);
+      addFunction(res);
+      return res;
     } else if (schema.type === "object") {
-      // entry.data = { [Symbol.for("entry")]: entry };
-      entry.data = {}
+      const res = {};
       for (let [key, value] of Object.entries(entry.children)) {
-        entry.data[key] = value.data;
+        res[key] = parseData(value, root, res);
       }
-      // entry.data = new Proxy(entry.data, {
-      //   set(target, p, newValue, receiver) {
-      //     changeData(entry.data[Symbol.for("entry")], p, newValue)
-      //     return true;
-      //   }
-      // })
+      return res;
     }
   }
 }
