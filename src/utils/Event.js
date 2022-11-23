@@ -10,10 +10,10 @@ class EventEmitter {
     this.queue[event].push(callback);
     console.log("[on] ", event);
   }
-  emit(event) {
+  emit(event,...params) {
     console.log("[emit]", event)
     if (this.queue.hasOwnProperty(event)) {
-      this.queue[event].forEach(callback => callback())
+      this.queue[event].forEach(callback => callback(...params))
     }
   }
 }

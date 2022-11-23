@@ -9,7 +9,7 @@ class TwoDimensionArray {
     const data = this.getDefault(this.schema);
     const proxy = this.getProxy(this.schema, data);
     this.data = [[proxy]];
-    ["get", "add", "delete"].forEach(op => {
+    ["get", "insert", "delete"].forEach(op => {
       this[`${op}${this.row}`] = (index) => {
         return this[`${op}Row`](index);
       }
@@ -33,7 +33,7 @@ class TwoDimensionArray {
     }
     return res;
   }
-  addRow(index) {
+  insertRow(index) {
     const rowNum = this.data.length;
     const colNum = this.data[0].length;
     const insertIndex = typeof index == "number" ? index : rowNum;
@@ -46,7 +46,7 @@ class TwoDimensionArray {
     this.data.splice(insertIndex, 0, row);
     return this;
   }
-  addCol(index) {
+  insertCol(index) {
     const rowNum = this.data.length;
     const colNum = this.data[0].length;
     const insertIndex = typeof index == "number" ? index : colNum;

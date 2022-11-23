@@ -79,10 +79,11 @@
   const { default: { parse } } = await import("../parser.refactor.js");
   const { default: { Income,Account,Budget } } = await import("../data.js")
   const [root,rootData] = parse(Budget);
-  console.dir(root,{depth:null})
+  // console.dir(root,{depth:null})
+  rootData.categories.splice(1,0);
+  rootData.years.splice(1,0);
+  console.dir(root.context.test.instance,{depth:null})
   console.dir(rootData,{depth:null})
-  
-
 })()
 
 // (async () => {

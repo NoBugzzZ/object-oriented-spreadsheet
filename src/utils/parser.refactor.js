@@ -35,6 +35,14 @@ function resolveContext(schema, parent, root) {
   const [className, direction] = resolveFrom(_from);
   const { title: parentTitle } = parent.schema;
 
+  root.event.on(`#/${parentTitle}`, (start,deleteCount) => {
+    // console.log(context[title].instance,start,deleteCount)
+    if(deleteCount===0){
+      context[title].instance[`insert${parentTitle}`](start);
+    }else{
+      context[title].instance[`delete${parentTitle}`](start);
+    }
+  })
   if (context.hasOwnProperty(title)) {
     if (context[title].path === refPath) {
       context[title] = { ...context[title], [direction]: parentTitle };
@@ -127,10 +135,12 @@ function parseFormula(entry, root, parentData) {
       for (let [key, value] of Object.entries(entry.parent.children)) {
         if (value?.path?.endsWith(param[0]) && value.schema.type === "array") {
           root.event.on(`${value.path}`, () => {
+            if (!parentData[key]) return;
             res.value = Formula[func](...parentData[key].map(d => d[param[1]].value));
             root.event.emit(`${entry.path}.${entry.key}`)
           });
           root.event.on(`${value.path}.${param[1]}`, () => {
+            if (!parentData[key]) return;
             res.value = Formula[func](...parentData[key].map(d => d[param[1]].value));
             root.event.emit(`${entry.path}.${entry.key}`)
           });
@@ -258,9 +268,29 @@ function observeSplice(obj, entry, root) {
         res = Reflect.apply(target, thisArg, argArray);
       }
       root.event.emit(entry.path)
+      for (let [key, value] of Object.entries(obj)) {
+        value["_index"] = key;
+      }
+      const paths = entry.path.split(".")
+      root.event.emit(`#/${paths[paths.length - 1]}`, start, deleteCount)
       return res;
     }
   })
+  return obj;
+}
+
+function filterOwnKeys(obj, filterKeys = []) {
+  return new Proxy(obj, {
+    ownKeys(target) {
+      const res = Reflect.ownKeys(target);
+      const filterRes = res.filter(k => (
+        (typeof k === "string" && !k.startsWith("_")) ||
+        typeof k === "symbol")
+        && !filterKeys.includes(k));
+      // console.log(filterRes,filterKeys)
+      return filterRes;
+    }
+  });
 }
 
 function addFunction(obj) {
@@ -272,13 +302,27 @@ function addFunction(obj) {
   }
 }
 
+function parseFromData(entry, root, parentData) {
+  const { schema } = entry;
+  const [className, direction] = resolveFrom(schema["_from"]);
+  const res = {
+    value: null,
+    getValue: function (index) {
+      const context = root.context[schema.title];
+      this.value = context.instance[`get${context[direction]}`](index);
+    }
+  };
+  res.getValue(parentData["_index"])
+  return res;
+}
+
 function parseData(entry, root, parentData) {
   const { children, schema } = entry;
   if (children === null) {
     if (schema.hasOwnProperty("_formula")) {
       return parseFormula(entry, root, parentData);
     } else if (schema.hasOwnProperty("_from")) {
-
+      return parseFromData(entry, root, parentData)
     } else {
       return {
         value: getDefault(schema.type),
@@ -290,13 +334,13 @@ function parseData(entry, root, parentData) {
     }
   } else {
     if (schema.type === "array") {
-      const res = [];
+      const proxy = filterOwnKeys([], ["splice", "insert", "delete"]);
+      const res = observeSplice(proxy, entry, root);
       res.push(parseData(entry.children[0], root, res));
-      observeSplice(res, entry, root);
       addFunction(res);
       return res;
     } else if (schema.type === "object") {
-      const res = {};
+      const res = filterOwnKeys({});
       for (let [key, value] of Object.entries(entry.children)) {
         res[key] = parseData(value, root, res);
       }
