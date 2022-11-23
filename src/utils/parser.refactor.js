@@ -313,6 +313,12 @@ function parseFromData(entry, root, parentData) {
     }
   };
   res.getValue(parentData["_index"])
+  root.event.on(`#/${root.context[schema.title].row}`,()=>{
+    res.getValue(parentData["_index"])
+  })
+  root.event.on(`#/${root.context[schema.title].col}`,()=>{
+    res.getValue(parentData["_index"])
+  })
   return res;
 }
 

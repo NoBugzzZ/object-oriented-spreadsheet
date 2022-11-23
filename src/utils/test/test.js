@@ -81,7 +81,10 @@
   const [root,rootData] = parse(Budget);
   // console.dir(root,{depth:null})
   rootData.categories.splice(1,0);
+  rootData.categories.splice(2,0);
+  rootData.categories.splice(1,1);
   rootData.years.splice(1,0);
+  rootData.years.splice(1,1);
   console.dir(root.context.test.instance,{depth:null})
   console.dir(rootData,{depth:null})
 })()
