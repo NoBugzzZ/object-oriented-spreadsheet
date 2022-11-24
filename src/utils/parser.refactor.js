@@ -35,11 +35,11 @@ function resolveContext(schema, parent, root) {
   const [className, direction] = resolveFrom(_from);
   const { title: parentTitle } = parent.schema;
 
-  root.event.on(`#/${parentTitle}`, (start,deleteCount) => {
+  root.event.on(`#/${parentTitle}`, (start, deleteCount) => {
     // console.log(context[title].instance,start,deleteCount)
-    if(deleteCount===0){
+    if (deleteCount === 0) {
       context[title].instance[`insert${parentTitle}`](start);
-    }else{
+    } else if(deleteCount === 1){
       context[title].instance[`delete${parentTitle}`](start);
     }
   })
@@ -142,6 +142,15 @@ function parseFormula(entry, root, parentData) {
           root.event.on(`${value.path}.${param[1]}`, () => {
             if (!parentData[key]) return;
             res.value = Formula[func](...parentData[key].map(d => d[param[1]].value));
+            root.event.emit(`${entry.path}.${entry.key}`)
+          });
+        } else if (value.schema.hasOwnProperty("_from") && value.schema["_schema"].endsWith(param[0])) {
+          console.log(`### ${entry.path}.${entry.key}`)
+          root.event.on(`${value.path}.${key}`, () => {
+            if (!parentData[key]) return;
+            const params=parentData[key].value.map(d => d[param[1]])
+            // console.log(params,`${entry.path}.${entry.key}`)
+            res.value = Formula[func](...params);
             root.event.emit(`${entry.path}.${entry.key}`)
           });
         }
@@ -310,13 +319,20 @@ function parseFromData(entry, root, parentData) {
     getValue: function (index) {
       const context = root.context[schema.title];
       this.value = context.instance[`get${context[direction]}`](index);
+      root.event.emit(`${entry.path}.${entry.key}`)
+    },
+    update:function(row, col, p, newValue){
+      const context = root.context[schema.title];
+      context.instance[`update`](row, col, p, newValue);
+      root.event.emit(`#/${root.context[schema.title].row}`)
+      root.event.emit(`#/${root.context[schema.title].col}`)
     }
   };
   res.getValue(parentData["_index"])
-  root.event.on(`#/${root.context[schema.title].row}`,()=>{
+  root.event.on(`#/${root.context[schema.title].row}`, () => {
     res.getValue(parentData["_index"])
   })
-  root.event.on(`#/${root.context[schema.title].col}`,()=>{
+  root.event.on(`#/${root.context[schema.title].col}`, () => {
     res.getValue(parentData["_index"])
   })
   return res;
