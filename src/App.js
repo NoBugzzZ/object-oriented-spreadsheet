@@ -17,8 +17,8 @@ function App() {
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   useEffect(() => {
-    const [root, rootData] = parse(Account);
-    const spreadsheet = transform(root.entry, rootData, null);
+    const [root, rootData] = parse(Budget);
+    const spreadsheet = transform(root.entry, rootData, root);
     console.log(root);
     console.log(rootData);
     console.log(spreadsheet)

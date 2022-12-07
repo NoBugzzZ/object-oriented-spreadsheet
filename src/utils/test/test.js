@@ -77,18 +77,19 @@
 
 (async () => {
   const { default: { parse } } = await import("../parser.refactor.js");
-  const { default: { transform } } = await import("../transformer.refactor.js");
+  const { default: { transform,toSpreadSheet } } = await import("../transformer.refactor.js");
   const { default: { Income, Account, Budget } } = await import("../data.js")
-  const [root, rootData] = parse(Account);
-  // rootData.income.items[0].value.update(5);
-  // rootData.expense.items[0].value.update(2);
-  let spreadsheet = transform(root.entry, rootData,null);
-  spreadsheet[6][0].insert(1);
-  spreadsheet[7][0].update(18);
-  spreadsheet = transform(root.entry, rootData,null);
-  // console.dir(root, { depth: null })
+  const [root, rootData] = parse(Budget);
+  // rootData.categories[0].CpYs.update(0,0,"quantity",2);
+  // rootData.categories[0].CpYs.update(0,0,"cost",2);
+  console.dir(root, { depth: null })
+  let spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  // spreadsheet[1][2].update(2);
+  // spreadsheet[1][3].update(2);
+  // spreadsheet[1][0].insert();
+  // spreadsheet=toSpreadSheet(root.entry,rootData,root);
   console.dir(rootData, { depth: null })
-  console.dir(spreadsheet, { depth: null });
+  console.dir(spreadsheet,{depth:null});
 })()
 
 // (async () => {
