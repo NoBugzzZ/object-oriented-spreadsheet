@@ -145,10 +145,11 @@ function parseFormula(entry, root, parentData) {
             root.event.emit(`${entry.path}.${entry.key}`)
           });
         } else if (value.schema.hasOwnProperty("_from") && value.schema["_schema"].endsWith(param[0])) {
-          console.log(`### ${entry.path}.${entry.key}`)
+          // console.log(`### ${entry.path}.${entry.key}`)
           root.event.on(`${value.path}.${key}`, () => {
             if (!parentData[key]) return;
-            const params=parentData[key].value.map(d => d[param[1]])
+            // console.log(parentData)
+            const params=parentData[key].value.map(d => d?.[param[1]])
             // console.log(params,`${entry.path}.${entry.key}`)
             res.value = Formula[func](...params);
             root.event.emit(`${entry.path}.${entry.key}`)
@@ -268,6 +269,7 @@ function observeSplice(obj, entry, root) {
     apply(target, thisArg, argArray) {
       let res;
       const [start, deleteCount] = argArray;
+      console.log(start,deleteCount)
       if (deleteCount === 0) {
         const item = parseData(entry.children[0], root);
         res = Reflect.apply(target, thisArg, [start, deleteCount, item]);
@@ -278,7 +280,7 @@ function observeSplice(obj, entry, root) {
       }
       root.event.emit(entry.path)
       for (let [key, value] of Object.entries(obj)) {
-        value["_index"] = key;
+        value["_index"] = +key;
       }
       const paths = entry.path.split(".")
       root.event.emit(`#/${paths[paths.length - 1]}`, start, deleteCount)
@@ -359,6 +361,7 @@ function parseData(entry, root, parentData) {
       const proxy = filterOwnKeys([], ["splice", "insert", "delete"]);
       const res = observeSplice(proxy, entry, root);
       res.push(parseData(entry.children[0], root, res));
+      res[0]["_index"]=0;
       addFunction(res);
       return res;
     } else if (schema.type === "object") {

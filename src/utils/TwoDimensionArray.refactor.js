@@ -20,7 +20,8 @@ class TwoDimensionArray {
   }
   getRow(index) {
     const rowNum = this.data.length;
-    const getIndex = typeof index == "number" ? index : rowNum - 1;
+    const getIndex = typeof index == "number" && index >= 0 && index < rowNum ? index : rowNum - 1;
+    // console.log(this.data, getIndex)
     return [...this.data[getIndex]];
   }
   getCol(index) {

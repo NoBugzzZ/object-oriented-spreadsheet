@@ -80,16 +80,30 @@
   const { default: { transform,toSpreadSheet } } = await import("../transformer.refactor.js");
   const { default: { Income, Account, Budget } } = await import("../data.js")
   const [root, rootData] = parse(Budget);
-  // rootData.categories[0].CpYs.update(0,0,"quantity",2);
-  // rootData.categories[0].CpYs.update(0,0,"cost",2);
-  console.dir(root, { depth: null })
-  let spreadsheet=toSpreadSheet(root.entry,rootData,root);
-  // spreadsheet[1][2].update(2);
-  // spreadsheet[1][3].update(2);
-  // spreadsheet[1][0].insert();
+  console.log("########")
+  rootData.categories[0].CpYs.update(0,0,"quantity",2);
+  rootData.categories[0].CpYs.update(0,0,"cost",2);
+  console.log("########")
+  rootData.categories.insert(1);
+  rootData.categories.delete(1);
+  // rootData.years.insert(1);
+  // rootData.years.delete(1);
+  // console.dir(root, { depth: null })
+  // let spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  // spreadsheet[3][2].update(2);
+  // spreadsheet[3][3].update(2);
   // spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  // spreadsheet[3][0].insert();
+  // spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  // spreadsheet[2][0].insert();
+  // spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  // spreadsheet[2][0].delete();
+  // spreadsheet[0][3].insert();
+  // spreadsheet[0][3].delete();
+  // spreadsheet=toSpreadSheet(root.entry,rootData,root);
+  console.dir(root.context, { depth: null })
   console.dir(rootData, { depth: null })
-  console.dir(spreadsheet,{depth:null});
+  // console.dir(spreadsheet,{depth:null});
 })()
 
 // (async () => {

@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import Schemas from "./utils/data"
 import Parser from './utils/parser.refactor';
 import Tranform from './utils/transformer.refactor';
+import AccountTransformer from './transforms/AccountTransformer';
+import BudgetTransformer from './transforms/BudgetTransformer';
 
 const { parse } = Parser
 const { transform } = Tranform;
@@ -16,16 +18,18 @@ function App() {
   const [rootData, setRootData] = useState(null);
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [transformFunc,setTransformFunc]=useState({func:null});
   useEffect(() => {
     const [root, rootData] = parse(Budget);
-    const spreadsheet = transform(root.entry, rootData, root);
-    console.log(root);
-    console.log(rootData);
-    console.log(spreadsheet)
+    const func=transform.bind(null,BudgetTransformer.transformer,root.entry,rootData,root);
+    const spreadsheet = func();
+    setTransformFunc({func});
     setRoot(root);
     setRootData(rootData);
     setGrid(spreadsheet)
   }, [])
+    console.log(rootData);
+    console.log(grid);
   return (
     <div className="App"
       style={{ position: 'relative' }}
@@ -49,7 +53,7 @@ function App() {
           changes.forEach(({ cell, row, col, value }) => {
             grid[row][col].update(value);
           });
-          setGrid(transform(root.entry, rootData, null))
+          setGrid(transformFunc.func())
           // const grid = this.state.grid.map(row => [...row]);
           // changes.forEach(({ cell, row, col, value }) => {
           //   grid[row][col] = { ...grid[row][col], value };
@@ -71,13 +75,14 @@ function App() {
       >
         <button onClick={() => {
           const { row, col } = currentPos;
-          grid[row][col]?.insert(+grid[row][col]?.index + 1);
-          setGrid(transform(root.entry, rootData, null))
+          grid[row][col]?.insert();
+          setGrid(transformFunc.func())
         }}>insert</button>
         <button onClick={() => {
           const { row, col } = currentPos;
-          grid[row][col]?.delete(+grid[row][col]?.index);
-          setGrid(transform(root.entry, rootData, null))
+          console.log(grid[row][col])
+          grid[row][col]?.delete();
+          setGrid(transformFunc.func())
         }}>delete</button>
       </div>
 
