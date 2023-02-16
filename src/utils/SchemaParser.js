@@ -5,6 +5,7 @@ class SchemaParse {
         this.schemaSource = schema;
         this.dataSource = data;
         this.parsedData = this.parse(this.schemaSource, this.dataSource);
+        this.queue={};
     }
     parse(schema, data) {
         return {
@@ -75,24 +76,43 @@ class SchemaParse {
     }
 
     getDataByPath(path="Budget.categories[0].Category.CpYs"){
-        const obj=find(path);
-        return path.value;
+        const obj=this.this.findByPath(path);
+        return obj.value;
     }
 
     setDataByPath(path,value){
-        const obj=find(path);
-        path.value=value;
+        const obj=this.findByPath(path);
+        obj.value=value;
     }
 
-    insert(){
-
+    insert(path){
+        const obj=this.findByPath(path);
+        obj.value.insert();
     }
 
-    delete(){
-        
+    delete(path){
+        const obj=this.findByPath(path);
+        obj.value.delete();
     }
 
-    find(path="Budget.categories[0].Category.CpYs"){
+    findByPath(path="Budget.categories[0].Category.CpYs"){
+        return {};
+    }
 
+    getAccess(path){
+        return[this.insert,this,this.getDataByPath,this.setDataByPath,this.delete];
+    }
+
+    register(path="",callback=()=>{}){
+        this.queue[path].push(callback);
     }
 }
+
+function getInstance(schema,data){
+    const parser=new SchemaParse({},{});
+    return ()=>parser;
+}
+
+const Instance=getInstance();
+
+export default Instance;
