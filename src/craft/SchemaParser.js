@@ -125,9 +125,15 @@ class SchemaParse {
                              *      }
                              * },
                              * ownKeys:(target)=>{
-                             *      return Reflect.ownKeys(target).filter(v=>v!==length);
+                             *      return Reflect.ownKeys(target).filter(i=>Number.isInteger(Number(i)));
                              * }
                              */
+                            insert(i){
+                                //插在中间，从末尾元素开始向后移动，
+                            },
+                            delete(i){
+
+                            },
                             length: 1,
                             0: {
                                 //Budget.Category[0]
@@ -173,7 +179,7 @@ class SchemaParse {
                                          *      //null
                                          * },
                                          */
-                                        value: {},
+                                        value: this.parsedData.context.CpYs,
                                     }
                                 }
                             }
@@ -254,7 +260,10 @@ class SchemaParse {
 
     }
 
-    
+    crud(){
+
+
+    }
 }
 
 const handler = {
