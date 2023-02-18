@@ -128,12 +128,27 @@ class SchemaParse {
                              *      return Reflect.ownKeys(target).filter(i=>Number.isInteger(Number(i)));
                              * }
                              */
-                            insert(i){
-                                //插在中间，从末尾元素开始向后移动，
+                            insert(i) {
+                                /**
+                                 * 1.若插在中间，从末尾元素开始向后移动
+                                 * 2.再依次递归创造新的子元素，得到新插入的对象，
+                                 * 若中间生成的元素有依赖关系：
+                                 *  2.1.若为1-n，即当前单个对象值可影响多个，
+                                 * 那么使用proxy配合路径取值直接修改对应对象值。
+                                 * 好处在于：删除对象时减少对dependencies的更新。此项优先级更高。
+                                 *  2.2.若为n-1或n-n(包括数组取值)，则使用发布订阅模式。
+                                 * 好处在于：更新可以推迟，即对数组的增删可以在增删完成后再触发，、
+                                 * 但是需要维护dependencies。
+                                 */
                             },
-                            delete(i){
-
+                            delete(i) {
+                                /**
+                                 * 1.先依次删除子元素。
+                                 * 2.若删除中间元素，则从删除的后一个元素依次往前移动
+                                 */
                             },
+                            type: "items",
+                            title: "Category",
                             length: 1,
                             0: {
                                 //Budget.Category[0]
@@ -260,7 +275,7 @@ class SchemaParse {
 
     }
 
-    crud(){
+    crud() {
 
 
     }
