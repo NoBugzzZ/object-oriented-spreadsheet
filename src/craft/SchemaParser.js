@@ -89,7 +89,12 @@ class SchemaParser {
       );
       //找到了数组截断点
       if (!target) {
-        
+        const arrTarget = this.find(
+          root,
+          current,
+          targetPaths.slice(0, i + 1).join(".") + "[]"
+        );
+        if (!(arrTarget.type === "array")) break;
       }
     }
 
