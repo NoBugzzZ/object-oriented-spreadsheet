@@ -4,60 +4,60 @@ const AccountSchemaSource = {
   type: "object",
   title: "Account",
   properties: {
-      netEarning: {
-          type: "integer",
-          formula: "Income.total - Expense.total",
-      },
-      income: {
-          $ref: "#/$defs/Income",
-      },
-      expense: {
-          $ref: "#/$defs/Expense",
-      },
+    netEarning: {
+      type: "integer",
+      formula: "Income.total - Expense.total",
+    },
+    income: {
+      $ref: "#/$defs/Income",
+    },
+    expense: {
+      $ref: "#/$defs/Expense",
+    },
   },
   $defs: {
-      Item: {
-          type: "object",
-          title: "Item",
-          properties: {
-              value: {
-                  type: "integer",
-                  title: "value",
-              },
-          },
+    Item: {
+      type: "object",
+      title: "Item",
+      properties: {
+        value: {
+          type: "integer",
+          title: "value",
+        },
       },
-      Income: {
-          type: "object",
-          title: "Income",
-          properties: {
-              total: {
-                  type: "integer",
-                  formula: "SUM(Item.value)",
-              },
-              items: {
-                  type: "array",
-                  items: {
-                      $ref: "#/$defs/Item",
-                  },
-              },
+    },
+    Income: {
+      type: "object",
+      title: "Income",
+      properties: {
+        total: {
+          type: "integer",
+          formula: "SUM(Item.value)",
+        },
+        items: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/Item",
           },
+        },
       },
-      Expense: {
-          type: "object",
-          title: "Expense",
-          properties: {
-              total: {
-                  type: "integer",
-                  formula: "SUM(Item.value)",
-              },
-              items: {
-                  type: "array",
-                  items: {
-                      $ref: "#/$defs/Item",
-                  },
-              },
+    },
+    Expense: {
+      type: "object",
+      title: "Expense",
+      properties: {
+        total: {
+          type: "integer",
+          formula: "SUM(Item.value)",
+        },
+        items: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/Item",
           },
+        },
       },
+    },
   },
 };
 
@@ -65,76 +65,76 @@ const BudgetSchemaSource = {
   type: "object",
   title: "Budget",
   properties: {
-      total: {
-          type: "integer",
-          formula: "SUM(Year.total)",
+    total: {
+      type: "integer",
+      formula: "SUM(Year.total)",
+    },
+    categories: {
+      type: "array",
+      items: {
+        $ref: "#/$defs/Category",
       },
-      categories: {
-          type: "array",
-          items: {
-              $ref: "#/$defs/Category",
-          },
+    },
+    years: {
+      type: "array",
+      items: {
+        $ref: "#/$defs/Year",
       },
-      years: {
-          type: "array",
-          items: {
-              $ref: "#/$defs/Year",
-          },
-      },
+    },
   },
   $defs: {
-      CpY: {
-          type: "object",
-          title: "CpY",
-          properties: {
-              quantity: {
-                  type: "integer",
-              },
-              cost: {
-                  type: "integer",
-              },
-              total: {
-                  type: "integer",
-                  formula: "quantity * cost",
-              },
-          },
+    CpY: {
+      type: "object",
+      title: "CpY",
+      properties: {
+        quantity: {
+          type: "integer",
+        },
+        cost: {
+          type: "integer",
+        },
+        total: {
+          type: "integer",
+          formula: "quantity * cost",
+        },
       },
-      Category: {
-          type: "object",
-          title: "Category",
-          properties: {
-              name: {
-                  type: "string",
-              },
-              total: {
-                  type: "integer",
-                  formula: "SUM(CpY.total)",
-              },
-              CpYs: {
-                  _from: "TwoDimensionArray/row",
-                  _schema: "#/$defs/CpY",
-                  title: "test",
-              },
-          },
+    },
+    Category: {
+      type: "object",
+      title: "Category",
+      properties: {
+        name: {
+          type: "string",
+        },
+        total: {
+          type: "integer",
+          formula: "SUM(CpY.total)",
+        },
+        CpYs: {
+          _from: "TwoDimensionArray/row",
+          _schema: "#/$defs/CpY",
+          title: "test",
+        },
       },
-      Year: {
-          type: "object",
-          title: "Year",
-          properties: {
-              year: {
-                  type: "integer",
-              },
-              total: {
-                  type: "integer",
-                  formula: "SUM(CpY.total)",
-              },
-              CpYs: {
-                  _from: "TwoDimensionArray/col",
-                  _schema: "#/$defs/CpY",
-                  title: "test",
-              },
-          },
+    },
+    Year: {
+      type: "object",
+      title: "Year",
+      properties: {
+        year: {
+          type: "integer",
+        },
+        total: {
+          type: "integer",
+          formula: "SUM(CpY.total)",
+        },
+        CpYs: {
+          _from: "TwoDimensionArray/col",
+          _schema: "#/$defs/CpY",
+          title: "test",
+        },
       },
+    },
   },
 };
 
@@ -145,15 +145,24 @@ const BudgetSchemaSource = {
 const parser = new SchemaParser(AccountSchemaSource, null);
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.parseProxy(parser.root, parser.root.rootData);
-parser.root.rootData.value.income.value.items.value["0"].value.value.value=111;
+const crud1=parser.getCRUD(parser.root,"Account.Income.Item.value");
+console.log(crud1[0][1]());
+console.log(crud1[0][2](11111));
+// console.log(parser.getCRUD(parser.root,"Account.Expense.Item.value"));
+// const crud1=parser.getCRUD(parser.root,"Account.netEarning");
+// crud1[1]();
+// parser.root.rootData.value.income.value.items.value[
+//   "0"
+// ].value.value.value = 111;
 // parser.root.callbacks["Income.Item[0].Item.value"].callbacks[0]();
 
 // parser.root.rootData.value.income.value.total.value = 100;
 // parser.root.callbacks["Account.Income.total"].callbacks[0]();
 
-parser.root.rootData.value.expense.value.items.value["0"].value.value.value=99;
+// parser.root.rootData.value.expense.value.items.value[
+//   "0"
+// ].value.value.value = 99;
 // parser.root.rootData.value.expense.value.total.value = 10;
-
 
 console.dir(parser.root, { depth: Infinity });
 // console.dir(
@@ -181,7 +190,6 @@ console.dir(parser.root, { depth: Infinity });
 //   ),
 //   { depth: Infinity }
 // );
-
 
 // const a={};
 // const p=new Proxy(a,{});
