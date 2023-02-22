@@ -145,9 +145,15 @@ const BudgetSchemaSource = {
 const parser = new SchemaParser(AccountSchemaSource, null);
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.parseProxy(parser.root, parser.root.rootData);
-const crud1=parser.getCRUD(parser.root,"Account.Income.Item.value");
-console.log(crud1[0][1]());
-console.log(crud1[0][2](11111));
+// parser.clearCallbacks();
+// const crud1=parser.getCRUD(parser.root,"Account.Income.Item.value");
+// console.log(crud1[0][1]());
+// console.log(crud1[0][2](11111));
+
+// const crud=parser.getCRUD(parser.root,"Account.Income.Item.value");
+// const crud0=crud[0];
+// crud0[0](1,111);
+
 // console.log(parser.getCRUD(parser.root,"Account.Expense.Item.value"));
 // const crud1=parser.getCRUD(parser.root,"Account.netEarning");
 // crud1[1]();

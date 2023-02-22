@@ -67,7 +67,8 @@ class SchemaParser {
      * 2.若满足4，则需要将basePath.A.B.C...W.X[]与basePath.A.B.C...W.X[]...Z.a
      *  存入callbackPath
      */
-
+    
+    //TODO: 应该相对于某一层级对象寻找，而不是从根节点寻找
     const current = this.find(root, root.rootData, basePath);
     // console.dir(current,{depth:1});
     //下面两部，将完全覆盖1和3，剩下的就是处理2和4，即路径中包含数组的情况。
@@ -259,6 +260,7 @@ class SchemaParser {
         path: totalPath,
         type,
         title: itemsSchema.title || title,
+        itemsSchema,
         value: {
           path: totalPath,
           type: "items",
@@ -330,6 +332,9 @@ class SchemaParser {
     const temp = Object.prototype.toString.call(obj);
     const len = temp.length;
     return temp.slice(len - 6, len - 1) === "proxy";
+  }
+  clearCallbacks(){
+    this.root.callbacks={};
   }
   parseProxy(root, parsedData, path = "", parent = null, property = "") {
     const { type } = parsedData;
