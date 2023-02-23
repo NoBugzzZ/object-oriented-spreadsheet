@@ -12,6 +12,7 @@ const funcs = {
 
 class SchemaParser {
   constructor(schema, data) {
+    this.getRoot=this.getRoot.bind(this);
     this.root = {
       context: {},
       callbacks: {},
@@ -46,6 +47,15 @@ class SchemaParser {
     const func = formula.slice(0, start);
     return [funcs[func], params];
   }
+
+  /**
+   * 
+   * 以SUM(Item.value)为例
+   * @param {*} root 原始root或者虚拟root
+   * @param {*} basePath 基于root的父路径
+   * @param {*} param "Item.value"
+   * @returns 
+   */
   getTrueParam(root, basePath, param) {
     //根据三步骤获取参数列表
     /**
@@ -67,7 +77,7 @@ class SchemaParser {
      * 2.若满足4，则需要将basePath.A.B.C...W.X[]与basePath.A.B.C...W.X[]...Z.a
      *  存入callbackPath
      */
-    
+
     //TODO: 应该相对于某一层级对象寻找，而不是从根节点寻找
     const current = this.find(root, root.rootData, basePath);
     // console.dir(current,{depth:1});
@@ -76,6 +86,7 @@ class SchemaParser {
     const target = this.find(root, current, targetPath);
     // console.dir(target,{depth:1});
     if (target) {
+      //闭包，但是
       function getTarget() {
         return [target.value];
       }
@@ -134,6 +145,17 @@ class SchemaParser {
     // console.log(basePath, param, getArrAfterTarget, callbackPath);
     return [getArrAfterTarget, callbackPath];
   }
+
+  /**
+   * 评估该函数看着也是路径无关的
+   * 
+   * 以SUM(Item.value)为例
+   * @param {*} root 
+   * @param {*} func SUM()对应的内建函数
+   * @param {*} params ["Item.value"]，有多个参数就有字符串
+   * @param {*} basePath 基于root的父路径
+   * @param {*} bindPath 基于root的需要解析formula的parsedData路径
+   */
   genNormalCallback(root, func, params, basePath, bindPath) {
     const paths = [];
     const targets = [];
@@ -199,14 +221,26 @@ class SchemaParser {
       root.callbacks[path].callbacks.push(callback);
     });
   }
+
+  /**
+   * 评估：应该也是路径无关的
+   * 
+   * @param {*} root 可以是原始的root也可以是虚拟root
+   * @param {*} parsedData 需要解析formula的那个解析后对象
+   * @param {*} basePath 基于root的父路径
+   * @param {*} bindPath 基于root的parsedData路径
+   */
   parseFormula(root, parsedData, basePath, bindPath) {
     const { formula } = parsedData;
     const formulaPattern = /^[A-Z]+\(.*\)$/i;
     const expressionPattern = /^\w+(\.\w+)*(\s[-+*/]\s\w+(\.\w+)*)*$/i;
+    //普通formula，例如SUM(Item.value)
     if (formulaPattern.test(formula)) {
       const [func, params] = this.parseFormulaStr(formula);
       this.genNormalCallback(root, func, params, basePath, bindPath);
     } else if (expressionPattern.test(formula)) {
+      //表达式formula，例如Now()-birthday，其中Now()是内建函数，当前还未实现，
+      //另一个例子比如a-b
       const variableReg = /\w+(\.\w+)*/gi;
       const variables = Array.from(new Set(formula.match(variableReg)));
       // const operatorReg = /\s[-+*/]\s/ig
@@ -214,6 +248,14 @@ class SchemaParser {
       this.genArithmeticCallback(root, formula, variables, basePath, bindPath);
     }
   }
+
+  /**
+   * 解析$ref，将$ref指向的$defs里的schema取出来。
+   * 
+   * @param {*} root 
+   * @param {*} schema 
+   * @returns 
+   */
   parseRef(root, schema) {
     if (!schema.hasOwnProperty("$ref")) {
       return schema;
@@ -231,6 +273,24 @@ class SchemaParser {
      */
     return {};
   }
+
+  /**
+   * parse方法递归解析schema与data生成相应的对象格式，共后面parsecallback使用，
+   * 该方法在数组增加时需要重复使用，解析新添加对象的schema。
+   * 
+   * 评估：因为暂时还未在root上直接写数组，所以该方法与路径无关，后期数组增加对象时可以直接使用，
+   * 但要注意path与title的修改
+   * 在插入数组新对象时，可以生成一个虚拟root，从虚拟root处生成parseddata，应该可行，
+   * 那么也就不需要修改path和title，就会生成路径无关的对象
+   * 
+   * @param {*} root 包含最终解析的所有数据信息以及一些元数组：schemaSource、dataSource
+   * @param {*} _schema 需要解析的schema
+   * @param {*} data  schema对应的data，data可以直接为null，那么childData也为null
+   * @param {*} path  记录各对象的[parent]的path，解析后的对象应该是路径无关的，只是为了方便调试观察，
+   *                  应该不做实际用处，若使用则在数组增删时维护path中的索引项，增加维护成本
+   * @param {*} title schema路径上的title，字段未指定title则使用此项
+   * @returns 
+   */
   parse(root, _schema, data, path = "", title = "") {
     const schema = this.parseRef(root, _schema);
     const { type } = schema;
@@ -244,7 +304,9 @@ class SchemaParser {
         value: {},
       };
       for (let [property, childSchema] of Object.entries(schema.properties)) {
+        //data也许为null
         const childData = data?.[property] || null;
+        //递归解析object下的子对象
         res.value[property] = this.parse(
           root,
           childSchema,
@@ -254,6 +316,7 @@ class SchemaParser {
         );
       }
     } else if (type === "array") {
+      //array类型的递归解析object有些区别，需要根据data的数量自己添加对应索引值
       const itemsSchema = this.parseRef(root, schema.items);
       const totalPath = `${path}.${itemsSchema.title}[]`;
       res = {
@@ -270,7 +333,9 @@ class SchemaParser {
       };
       const itemsData = data || [null];
       itemsData.forEach((childData, i) => {
+        //重新生成array下的各个child的parentpath
         const totalPath = `${path}.${itemsSchema.title}[${i}]`;
+        //递归解析
         res.value[i] = this.parse(root, itemsSchema, childData, totalPath, i);
         res.value.length++;
       });
@@ -280,6 +345,7 @@ class SchemaParser {
         path: totalPath,
         type,
         title: schema.title || title,
+        //应当只有基础类型可以指定依赖对象，使用公式
         formula: schema.formula || null,
         value: data || this.defaultData(type),
       };
@@ -288,24 +354,38 @@ class SchemaParser {
       //   }
     } else {
       //自定义类型
-      const totalPath = `${path}.${title}`;
-      const customTypeSchema = this.parseCustomTypeSchema(
-        root,
-        schema,
-        data,
-        path,
-        title
-      );
-      res = {
-        path: totalPath,
-        type: customTypeSchema.type,
-        title: customTypeSchema.title,
-        value: {},
-      };
+      // const totalPath = `${path}.${title}`;
+      // const customTypeSchema = this.parseCustomTypeSchema(
+      //   root,
+      //   schema,
+      //   data,
+      //   path,
+      //   title
+      // );
+      // res = {
+      //   path: totalPath,
+      //   type: customTypeSchema.type,
+      //   title: customTypeSchema.title,
+      //   value: {},
+      // };
     }
     return res;
   }
 
+  getRoot(){
+    return this;
+  }
+
+  /**
+   * 作用根据formula构建callback，因为数据依赖只有1-1或者1-n，其中1是依赖方，1和n是被依赖方，
+   * 评估：该方法应该也是路径无关方法，即放入任意一个parseddata都可以解析，但是要记得生成虚拟root
+   * 
+   * @param {*} root 提供存储callbacks的环境，//TODO: 以及用提供后期可能需要的context
+   *                  但是对于数组的添加，应该提供一个虚拟的root，即将context里的内容提取出来（通过已绑定this的getRoot拿到root），
+   *                  在添加一个自己的callbacks，得到一个基于当前要增加的那个对象的虚拟root，供后面的parseProxy使用
+   * @param {*} parsedData 可改变解析根路径
+   * @param {*} path 
+   */
   parseCallbacks(root, parsedData, path = "") {
     const { type } = parsedData;
     if (type === "object") {
@@ -333,8 +413,8 @@ class SchemaParser {
     const len = temp.length;
     return temp.slice(len - 6, len - 1) === "proxy";
   }
-  clearCallbacks(){
-    this.root.callbacks={};
+  clearCallbacks() {
+    this.root.callbacks = {};
   }
   parseProxy(root, parsedData, path = "", parent = null, property = "") {
     const { type } = parsedData;
@@ -460,18 +540,20 @@ class SchemaParser {
   }
 
   setData(value) {
-    console.log(value,this);
+    console.log(value, this);
     this.value = value;
   }
 
-  insertData(index,value) {
-    console.log(index,value,this);
+  insertData(index, value) {
+    console.log(index, value, this);
   }
 
   deleteData(index) {
-    console.log(index,this);
+    console.log(index, this);
   }
 
+  //获取crud函数，并且使用bind绑定到对应的对象，使用crud时就会修改
+  //后面应该要改成object里提前绑定对象，而不应该在crud里绑定
   getCRUD(root, path = "", _parsedData = null) {
     const parsedData = _parsedData || root.rootData;
     const target = this.find(root, parsedData, path);
@@ -514,10 +596,10 @@ class SchemaParser {
             if (!arrAfterTarget) return [[null, null, null, null]];
             const setData = this.setData.bind(arrAfterTarget);
             const getData = this.getData.bind(arrAfterTarget);
-            const insertData=this.insertData.bind(arrTarget);
-            const deleteData=this.deleteData.bind(arrTarget);
+            const insertData = this.insertData.bind(arrTarget);
+            const deleteData = this.deleteData.bind(arrTarget);
             // console.log(arrAfterPath,arrAfterTarget,arrPath,arrTarget);
-            res.push([insertData,getData,setData,deleteData]);
+            res.push([insertData, getData, setData, deleteData]);
           }
         }
         break;
