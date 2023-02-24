@@ -145,6 +145,15 @@ const BudgetSchemaSource = {
 const parser = new SchemaParser(AccountSchemaSource, null);
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.parseProxy(parser.root, parser.root.rootData);
+parser.bindThisForCallback(parser.root, parser.root.rootData);
+// parser.clearCallbacks();
+
+parser.root.rootData.value.income.value.items.value[
+  "0"
+].value.value.value = 111;
+console.dir(parser.root, { depth: Infinity });
+
+// parser.parseProxy(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
 // const crud1=parser.getCRUD(parser.root,"Account.Income.Item.value");
 // console.log(crud1[0][1]());
@@ -160,7 +169,7 @@ parser.parseProxy(parser.root, parser.root.rootData);
 // parser.root.rootData.value.income.value.items.value[
 //   "0"
 // ].value.value.value = 111;
-// parser.root.callbacks["Income.Item[0].Item.value"].callbacks[0]();
+// parser.root.callbacks["Account.Income.Item[0].Item.value"].callbacks[0]();
 
 // parser.root.rootData.value.income.value.total.value = 100;
 // parser.root.callbacks["Account.Income.total"].callbacks[0]();
@@ -170,7 +179,8 @@ parser.parseProxy(parser.root, parser.root.rootData);
 // ].value.value.value = 99;
 // parser.root.rootData.value.expense.value.total.value = 10;
 
-console.dir(parser.root, { depth: Infinity });
+// console.dir(parser.root, { depth: Infinity });
+
 // console.dir(
 //   parser.find(
 //     parser.root,

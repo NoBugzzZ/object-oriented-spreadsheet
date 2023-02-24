@@ -12,7 +12,7 @@ const funcs = {
 
 class SchemaParser {
   constructor(schema, data) {
-    this.getRoot=this.getRoot.bind(this);
+    this.getRoot = this.getRoot.bind(this);
     this.root = {
       context: {},
       callbacks: {},
@@ -49,12 +49,13 @@ class SchemaParser {
   }
 
   /**
-   * 
-   * 以SUM(Item.value)为例
+   * 后续Account在Item处可能会insert，之后在考虑
+   *
+   * 以Account.Income.total的公式，SUM(Item.value)为例
    * @param {*} root 原始root或者虚拟root
-   * @param {*} basePath 基于root的父路径
+   * @param {*} basePath 基于root的父路径，以Account.Income为例
    * @param {*} param "Item.value"
-   * @returns 
+   * @returns
    */
   getTrueParam(root, basePath, param) {
     //根据三步骤获取参数列表
@@ -78,86 +79,104 @@ class SchemaParser {
      *  存入callbackPath
      */
 
-    //TODO: 应该相对于某一层级对象寻找，而不是从根节点寻找
-    const current = this.find(root, root.rootData, basePath);
+    //应该也是路径无关的，此处只有基本字段可以定义formula，而基本字段只能出现在object类型中，不允许直接定义在array类型中，
+    //所此处只能find到object类型的parent，后续从Array类型的insert操作，root.rootData因此也只能是object类型，省去不少麻烦
+    const parentParsedData = this.find(root, root.rootData, basePath);
     // console.dir(current,{depth:1});
-    //下面两部，将完全覆盖1和3，剩下的就是处理2和4，即路径中包含数组的情况。
-    const targetPath = `${current.title}.${param}`;
-    const target = this.find(root, current, targetPath);
+    //下面两步，将完全覆盖1和3，剩下的就是处理2和4，即路径中包含数组的情况。
+    //Income.Item.value
+    const targetPath = `${parentParsedData.title}.${param}`;
+    //从父节点开始寻找target
+    const target = this.find(root, parentParsedData, targetPath);
     // console.dir(target,{depth:1});
+    // 只是依赖普通字段，而非数组字段
     if (target) {
-      //闭包，但是
+      //bind target，直接用this获取，这里返回参数数组是为了兼容Item.value这样的真数组
       function getTarget() {
-        return [target.value];
+        return [this.value];
       }
       // console.log(basePath, param, getTarget, [`${basePath}.${param}`]);
-      return [getTarget, [`${basePath}.${param}`]];
+      return [getTarget.bind(target), [`${basePath}.${param}`]];
     }
 
     //处理包含数组的情况
     // const res = [];
-    const callbackPath = [];
     const targetPaths = targetPath.split(".");
     let arrPath = "";
     let arrAfterPath = "";
     let arrTarget = null;
-    for (let i = 0; i < targetPaths.length; i++) {
+    //此处从Income.Item开始应该是是正确的，不从Income开始也是一种小的优化
+    for (let i = 1; i < targetPaths.length; i++) {
+      //此处寻找截断点的方式是find返回数组只能在末尾加上[]，直接搜索Income.Item为null
       const targetTemp = this.find(
         root,
-        current,
+        parentParsedData,
         targetPaths.slice(0, i + 1).join(".")
       );
-      //找到了数组截断点
+      //找到了数组截断点，截断点一定只会出现在Item.value里，
+      //因为Income.Item为null，所以用Income.Item[]寻找
       if (!targetTemp) {
         const arrTargetTemp = this.find(
           root,
-          current,
+          parentParsedData,
           targetPaths.slice(0, i + 1).join(".") + "[]"
         );
         //找到截断点对应的数组，为了美观先break
         if (arrTargetTemp.type === "array") {
-          arrPath = basePath + "." + targetPaths[1] + "[]";
+          //基于root的绝对路径Accout.Income.Item[]
+          arrPath =
+            basePath + "." + targetPaths.slice(1, i + 1).join(".") + "[]";
           arrTarget = arrTargetTemp;
-          arrAfterPath =
-            targetPaths[i] + "." + targetPaths.slice(i + 1).join(".");
+          //Item.value
+          arrAfterPath = targetPaths.slice(i).join(".");
           break;
         }
       }
     }
+
+    //因为要从arrTarget.value[0]开始寻找，所以数组不能为空
     const arrAfterTarget = this.find(root, arrTarget.value[0], arrAfterPath);
     //截断点后的path找不到对应的对象，其他情况皆不考虑了
     if (!arrAfterTarget) return [null, []];
 
+    //基于root
+    const callbackPath = [];
     for (let i = 0; i < arrTarget.value.length; i++) {
+      //Accout.Income.Item[i]
       const temp = arrPath.slice(0, arrPath.length - 1) + i + "]";
+      //Accout.Income.Item[i].Item.value
       callbackPath.push(temp + "." + arrAfterPath);
     }
     callbackPath.push(arrPath);
     const find = this.find.bind(this);
     function getArrAfterTarget() {
+      //上面的函数返回值为[]，就是为了兼容此处
       const values = [];
-      for (let i = 0; i < arrTarget.value.length; i++) {
-        const arrAfterTarget = find(root, arrTarget.value[i], arrAfterPath);
+      for (let i = 0; i < this.value.length; i++) {
+        //arrAfterPath=Item.value
+        const arrAfterTarget = find(root, this.value[i], arrAfterPath);
         values.push(arrAfterTarget.value);
       }
       return values;
     }
     // console.log(basePath, param, getArrAfterTarget, callbackPath);
-    return [getArrAfterTarget, callbackPath];
+    return [getArrAfterTarget.bind(arrTarget), callbackPath];
   }
 
   /**
    * 评估该函数看着也是路径无关的
-   * 
+   *
    * 以SUM(Item.value)为例
-   * @param {*} root 
+   * @param {*} root
    * @param {*} func SUM()对应的内建函数
    * @param {*} params ["Item.value"]，有多个参数就有字符串
    * @param {*} basePath 基于root的父路径
    * @param {*} bindPath 基于root的需要解析formula的parsedData路径
    */
   genNormalCallback(root, func, params, basePath, bindPath) {
+    //formula依赖的parsedData的path
     const paths = [];
+    //formula获取参数列表的函数
     const targets = [];
     params.forEach((param) => {
       const [getValuesFunc, callbackPaths] = this.getTrueParam(
@@ -169,6 +188,7 @@ class SchemaParser {
       targets.push(getValuesFunc);
     });
     // const getTrueParam = this.getTrueParam.bind(this);
+    //this绑定到formula对应的parsedData
     function callback() {
       const argv = [];
       targets.forEach((getValuesFunc) => {
@@ -224,7 +244,7 @@ class SchemaParser {
 
   /**
    * 评估：应该也是路径无关的
-   * 
+   *
    * @param {*} root 可以是原始的root也可以是虚拟root
    * @param {*} parsedData 需要解析formula的那个解析后对象
    * @param {*} basePath 基于root的父路径
@@ -251,10 +271,10 @@ class SchemaParser {
 
   /**
    * 解析$ref，将$ref指向的$defs里的schema取出来。
-   * 
-   * @param {*} root 
-   * @param {*} schema 
-   * @returns 
+   *
+   * @param {*} root
+   * @param {*} schema
+   * @returns
    */
   parseRef(root, schema) {
     if (!schema.hasOwnProperty("$ref")) {
@@ -277,19 +297,19 @@ class SchemaParser {
   /**
    * parse方法递归解析schema与data生成相应的对象格式，共后面parsecallback使用，
    * 该方法在数组增加时需要重复使用，解析新添加对象的schema。
-   * 
+   *
    * 评估：因为暂时还未在root上直接写数组，所以该方法与路径无关，后期数组增加对象时可以直接使用，
    * 但要注意path与title的修改
    * 在插入数组新对象时，可以生成一个虚拟root，从虚拟root处生成parseddata，应该可行，
    * 那么也就不需要修改path和title，就会生成路径无关的对象
-   * 
+   *
    * @param {*} root 包含最终解析的所有数据信息以及一些元数组：schemaSource、dataSource
    * @param {*} _schema 需要解析的schema
    * @param {*} data  schema对应的data，data可以直接为null，那么childData也为null
    * @param {*} path  记录各对象的[parent]的path，解析后的对象应该是路径无关的，只是为了方便调试观察，
    *                  应该不做实际用处，若使用则在数组增删时维护path中的索引项，增加维护成本
    * @param {*} title schema路径上的title，字段未指定title则使用此项
-   * @returns 
+   * @returns
    */
   parse(root, _schema, data, path = "", title = "") {
     const schema = this.parseRef(root, _schema);
@@ -372,19 +392,19 @@ class SchemaParser {
     return res;
   }
 
-  getRoot(){
+  getRoot() {
     return this;
   }
 
   /**
    * 作用根据formula构建callback，因为数据依赖只有1-1或者1-n，其中1是依赖方，1和n是被依赖方，
    * 评估：该方法应该也是路径无关方法，即放入任意一个parseddata都可以解析，但是要记得生成虚拟root
-   * 
+   *
    * @param {*} root 提供存储callbacks的环境，//TODO: 以及用提供后期可能需要的context
    *                  但是对于数组的添加，应该提供一个虚拟的root，即将context里的内容提取出来（通过已绑定this的getRoot拿到root），
    *                  在添加一个自己的callbacks，得到一个基于当前要增加的那个对象的虚拟root，供后面的parseProxy使用
    * @param {*} parsedData 可改变解析根路径
-   * @param {*} path 
+   * @param {*} path
    */
   parseCallbacks(root, parsedData, path = "") {
     const { type } = parsedData;
@@ -413,9 +433,55 @@ class SchemaParser {
     const len = temp.length;
     return temp.slice(len - 6, len - 1) === "proxy";
   }
+
   clearCallbacks() {
     this.root.callbacks = {};
   }
+
+  //绑定parsedData.callbacks下的所有回调函数
+  bindThisForCallback(root, parsedData, path = "") {
+    const { type } = parsedData;
+    if (type === "object") {
+      const totalPath =
+        path === "" ? parsedData.title : `${path}.${parsedData.title}`;
+      for (let childParsedData of Object.values(parsedData.value)) {
+        this.bindThisForCallback(root, childParsedData, totalPath);
+      }
+    } else if (type === "array") {
+      if (parsedData.hasOwnProperty("callbacks")) {
+        // console.log(parsedData);
+        const { bindPath, callbacks } = parsedData.callbacks;
+        const bindParsedData = this.find(root, root.rootData, bindPath);
+        parsedData.callbacks = callbacks.map((callback) =>
+          callback.bind(bindParsedData)
+        );
+      }
+      for (let i = 0; i < parsedData.value.length; i++) {
+        const totalPath = `${path}.${parsedData.title}[${i}]`;
+        this.bindThisForCallback(root, parsedData.value[i], totalPath);
+      }
+    } else if (BasicType.includes(type)) {
+      if (parsedData.hasOwnProperty("callbacks")) {
+        // console.log(parsedData);
+        const { bindPath, callbacks } = parsedData.callbacks;
+        const bindParsedData = this.find(root, root.rootData, bindPath);
+        parsedData.callbacks = callbacks.map((callback) =>
+          callback.bind(bindParsedData)
+        );
+      }
+    } else {
+      //自定义类型
+    }
+  }
+
+  /**
+   *
+   * @param {*} root
+   * @param {*} parsedData
+   * @param {*} path 基于root的父路径
+   * @param {*} parent  用于将parsedData替换为proxy
+   * @param {*} property parent[property]指向需要代理的parsedData
+   */
   parseProxy(root, parsedData, path = "", parent = null, property = "") {
     const { type } = parsedData;
     if (type === "object") {
@@ -425,12 +491,18 @@ class SchemaParser {
         this.parseProxy(root, childParsedData, totalPath, parsedData, p);
       }
     } else if (type === "array") {
-      const totalPath = `${path}.${parsedData.title}[]`;
-      if (root.callbacks.hasOwnProperty(totalPath)) {
-        // console.log(totalPath,parsedData);
-      }
+      const totalPath = `${path}.${parsedData.title}`;
+      parsedData.callbacks = root.callbacks[`${totalPath}[]`] || {};
+      //array不进行proxy代理
+      parsedData.insert = function insertFunc(index) {
+        console.log("[insert] to index " + index, this);
+      };
+      parsedData.delete = function deleteFunc(index) {
+        console.log("[delete] index " + index, this);
+      };
+
       for (let i = 0; i < parsedData.value.length; i++) {
-        const childTotalPath = `${path}.${parsedData.title}[${i}]`;
+        const childTotalPath = `${totalPath}[${i}]`;
         this.parseProxy(
           root,
           parsedData.value[i],
@@ -440,34 +512,45 @@ class SchemaParser {
         );
       }
     } else if (BasicType.includes(type)) {
+      //因为基本类型只存在在object类型中，所以不用担心array类型
       const totalPath = `${path}.${parsedData.title}`;
-      if (root.callbacks.hasOwnProperty(totalPath)) {
-        // console.log(totalPath,parent,property);
-        const [bindParent, bindProperty] = this.findParent(
-          root,
-          root.callbacks[totalPath].bindPath
-        );
-
-        // if (!this.isProxy(bindParent.value[bindProperty])) {
-        //     bindParent.value[bindProperty]=new Proxy(bindParent.value[property],{});
-        //     bindParent.value[bindProperty][Symbol.toStringTag]="proxy";
-        //     // console.log(bindParent,bindProperty);
-        // }
-        const cls = root.callbacks[totalPath].callbacks;
-        root.callbacks[totalPath].callbacks = cls.map((callback) => {
-          return callback.bind(bindParent.value[bindProperty]);
-        });
-        parent.value[property] = new Proxy(parent.value[property], {
-          set(target, property, newValue, receiver) {
-            let res = null;
-            res = Reflect.set(target, property, newValue, receiver);
-            root.callbacks[totalPath].callbacks.forEach((callback) => {
+      // console.log(totalPath);
+      //设置callbacks
+      parsedData.callbacks = root.callbacks[totalPath] || {};
+      parent.value[property] = new Proxy(parent.value[property], {
+        set(target, property, newValue, receiver) {
+          let res = null;
+          res = Reflect.set(target, property, newValue, receiver);
+          if (property === "value") {
+            //在监听set调用后后触发回调
+            target.callbacks?.forEach((callback) => {
               callback();
             });
-            return res;
-          },
-        });
-      }
+          }
+          return res;
+        },
+      });
+
+      // if (root.callbacks.hasOwnProperty(totalPath)) {
+      //   const [bindParent, bindProperty] = this.findParent(
+      //     root,
+      //     root.callbacks[totalPath].bindPath
+      //   );
+      //   const cls = root.callbacks[totalPath].callbacks;
+      //   root.callbacks[totalPath].callbacks = cls.map((callback) => {
+      //     return callback.bind(bindParent.value[bindProperty]);
+      //   });
+      //   parent.value[property] = new Proxy(parent.value[property], {
+      //     set(target, property, newValue, receiver) {
+      //       let res = null;
+      //       res = Reflect.set(target, property, newValue, receiver);
+      //       root.callbacks[totalPath].callbacks.forEach((callback) => {
+      //         callback();
+      //       });
+      //       return res;
+      //     },
+      //   });
+      // }
     } else {
       //自定义类型
     }
@@ -514,12 +597,13 @@ class SchemaParser {
         }
       }
     } else if (type === "array") {
-      const totalPath = `${path}.${parsedData.title}`;
+      const totalPath = "" ? parsedData.title : `${path}.${parsedData.title}`;
       // console.log(`${totalPath}[]`);
+      //find数组时path必须加上"[]"
       if (`${totalPath}[]` === target) return parsedData;
       if (target.startsWith(totalPath)) {
         for (let i = 0; i < parsedData.value.length; i++) {
-          const childPath = `${path}.${parsedData.title}[${i}]`;
+          const childPath = `${totalPath}[${i}]`;
           const res = this.find(root, parsedData.value[i], target, childPath);
           if (res) return res;
         }
