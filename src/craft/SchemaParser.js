@@ -96,7 +96,7 @@ class SchemaParser {
         return [this.value];
       }
       // console.log(basePath, param, getTarget, [`${basePath}.${param}`]);
-      return [getTarget.bind(target), [`${basePath}.${param}`]];
+      return [getTarget.bind(target), [`${basePath}.${param}`], { dependArray: false, target }];
     }
 
     //处理包含数组的情况
@@ -160,7 +160,7 @@ class SchemaParser {
       return values;
     }
     // console.log(basePath, param, getArrAfterTarget, callbackPath);
-    return [getArrAfterTarget.bind(arrTarget), callbackPath];
+    return [getArrAfterTarget.bind(arrTarget), callbackPath, { dependArray: true, arrTarget, arrAfterPath }];
   }
 
   /**
@@ -173,18 +173,18 @@ class SchemaParser {
    * @param {*} basePath 基于root的父路径
    * @param {*} bindPath 基于root的需要解析formula的parsedData路径
    */
-  genNormalCallback(root, func, params, basePath, bindPath) {
+  genNormalCallback(root, parsedData, func, params, basePath, bindPath) {
     //formula依赖的parsedData的path
-    const paths = [];
+    const contexts = [];
     //formula获取参数列表的函数
     const targets = [];
     params.forEach((param) => {
-      const [getValuesFunc, callbackPaths] = this.getTrueParam(
+      const [getValuesFunc, callbackPaths, context] = this.getTrueParam(
         root,
         basePath,
         param
       );
-      paths.push(...callbackPaths);
+      contexts.push(context);
       targets.push(getValuesFunc);
     });
     // const getTrueParam = this.getTrueParam.bind(this);
@@ -196,27 +196,30 @@ class SchemaParser {
       });
       this.value = func(...argv);
     }
-    paths.forEach((path) => {
-      if (!root.callbacks[path]) {
-        root.callbacks[path] = {
-          bindPath,
-          callbacks: [],
-        };
+    const bindedCallback = callback.bind(parsedData);
+    contexts.forEach((context) => {
+      if (context.dependArray) {
+        const { arrTarget, arrAfterPath } = context;
+        if (!arrTarget.callbacks[arrAfterPath]) {
+          arrTarget.callbacks[arrAfterPath] = [];
+        }
+        arrTarget.callbacks[arrAfterPath].push(bindedCallback);
+      } else {
+        context.target.callbacks.push(bindedCallback);
       }
-      root.callbacks[path].callbacks.push(callback);
     });
   }
-  genArithmeticCallback(root, expression, params, basePath, bindPath) {
-    const paths = [];
+  genArithmeticCallback(root, parsedData, expression, params, basePath, bindPath) {
+    const contexts = [];
     const targets = [];
     params.forEach((param) => {
       //此处res和callbackPaths只有单个元素
-      const [getValuesFunc, callbackPaths] = this.getTrueParam(
+      const [getValuesFunc, callbackPaths, context] = this.getTrueParam(
         root,
         basePath,
         param
       );
-      paths.push(...callbackPaths);
+      contexts.push(context);
       targets.push(getValuesFunc);
     });
     // const getTrueParam = this.getTrueParam.bind(this);
@@ -231,15 +234,29 @@ class SchemaParser {
       });
       this.value = funcs["Arithmetic"](calcExpr);
     }
-    paths.forEach((path) => {
-      if (!root.callbacks[path]) {
-        root.callbacks[path] = {
-          bindPath,
-          callbacks: [],
-        };
+
+    const bindedCallback = callback.bind(parsedData);
+    contexts.forEach((context) => {
+      if (context.dependArray) {
+        const { arrTarget, arrAfterPath } = context;
+        if (!arrTarget.callbacks[arrAfterPath]) {
+          arrTarget.callbacks[arrAfterPath] = [];
+        }
+        arrTarget.callbacks[arrAfterPath].push(bindedCallback);
+      } else {
+        context.target.callbacks.push(bindedCallback);
       }
-      root.callbacks[path].callbacks.push(callback);
     });
+
+    // paths.forEach((path) => {
+    //   if (!root.callbacks[path]) {
+    //     root.callbacks[path] = {
+    //       bindPath,
+    //       callbacks: [],
+    //     };
+    //   }
+    //   root.callbacks[path].callbacks.push(callback);
+    // });
   }
 
   /**
@@ -257,7 +274,7 @@ class SchemaParser {
     //普通formula，例如SUM(Item.value)
     if (formulaPattern.test(formula)) {
       const [func, params] = this.parseFormulaStr(formula);
-      this.genNormalCallback(root, func, params, basePath, bindPath);
+      this.genNormalCallback(root, parsedData, func, params, basePath, bindPath);
     } else if (expressionPattern.test(formula)) {
       //表达式formula，例如Now()-birthday，其中Now()是内建函数，当前还未实现，
       //另一个例子比如a-b
@@ -265,7 +282,7 @@ class SchemaParser {
       const variables = Array.from(new Set(formula.match(variableReg)));
       // const operatorReg = /\s[-+*/]\s/ig
       // const operators = formula.match(operatorReg);
-      this.genArithmeticCallback(root, formula, variables, basePath, bindPath);
+      this.genArithmeticCallback(root, parsedData, formula, variables, basePath, bindPath);
     }
   }
 
@@ -428,6 +445,29 @@ class SchemaParser {
       //自定义类型
     }
   }
+
+  distrubuteCallback(root, parsedData, path = "") {
+    const { type } = parsedData;
+    if (type === "object") {
+      const totalPath =
+        path === "" ? parsedData.title : `${path}.${parsedData.title}`;
+      for (let childParsedData of Object.values(parsedData.value)) {
+        this.distrubuteCallback(root, childParsedData, totalPath);
+      }
+    } else if (type === "array") {
+      for (let i = 0; i < parsedData.value.length; i++) {
+        const childParsedData = parsedData.value[i];
+        for (let [path, callbacks] of Object.entries(parsedData.callbacks)) {
+          const target = this.find(root, childParsedData, path);
+          target.callbacks.push(...callbacks);
+        }
+
+        const totalPath = `${path}.${parsedData.title}[${i}]`;
+        this.distrubuteCallback(root, childParsedData, totalPath);
+      }
+    }
+  }
+
   isProxy(obj) {
     const temp = Object.prototype.toString.call(obj);
     const len = temp.length;
@@ -452,9 +492,9 @@ class SchemaParser {
         // console.log(parsedData);
         const { bindPath, callbacks } = parsedData.callbacks;
         const bindParsedData = this.find(root, root.rootData, bindPath);
-        parsedData.callbacks = callbacks.map((callback) =>
+        parsedData.callbacks = callbacks?.map((callback) =>
           callback.bind(bindParsedData)
-        );
+        ) || [];
       }
       for (let i = 0; i < parsedData.value.length; i++) {
         const totalPath = `${path}.${parsedData.title}[${i}]`;
@@ -465,9 +505,9 @@ class SchemaParser {
         // console.log(parsedData);
         const { bindPath, callbacks } = parsedData.callbacks;
         const bindParsedData = this.find(root, root.rootData, bindPath);
-        parsedData.callbacks = callbacks.map((callback) =>
+        parsedData.callbacks = callbacks?.map((callback) =>
           callback.bind(bindParsedData)
-        );
+        ) || [];
       }
     } else {
       //自定义类型
@@ -492,13 +532,58 @@ class SchemaParser {
       }
     } else if (type === "array") {
       const totalPath = `${path}.${parsedData.title}`;
-      parsedData.callbacks = root.callbacks[`${totalPath}[]`] || {};
+      // parsedData.callbacks = root.callbacks[`${totalPath}[]`] || {};
       //array不进行proxy代理
+      parsedData.callbacks = {};
+
+      const parseFunc = this.parse.bind(this);
+      const parseProxyFunc = this.parseProxy.bind(this);
+      const parseCallbacksFunc = this.parseCallbacks.bind(this);
+      const distrubuteCallbackFunc = this.distrubuteCallback.bind(this);
+      const findFunc=this.find.bind(this);
       parsedData.insert = function insertFunc(index) {
-        console.log("[insert] to index " + index, this);
+        // console.log("[insert] to index " + index, this);
+        if(index<0||index>this.value.index) return;
+        const virtualRoot = {
+          context: root.context,
+          rootData: null,
+          schemaSource: this.itemsSchema,
+          dataSource: null,
+        }
+        virtualRoot.rootData=parseFunc(virtualRoot,virtualRoot.schemaSource,null);
+        parseProxyFunc(virtualRoot,virtualRoot.rootData);
+        parseCallbacksFunc(virtualRoot,virtualRoot.rootData);
+        distrubuteCallbackFunc(virtualRoot,virtualRoot.rootData);
+
+        for(let i=this.value.length-1;i>=index;i--){
+          this.value[i+1]=this.value[i];
+        }
+
+        this.value[index]=virtualRoot.rootData;
+        this.value.length++;
+
+        for (let [path, callbacks] of Object.entries(this.callbacks)) {
+          const target = findFunc(virtualRoot, virtualRoot.rootData, path);
+          target.callbacks.push(...callbacks);
+          callbacks.forEach(callback=>{
+            callback();
+          })
+        }
+        // console.dir(virtualRoot.rootData,{depth:Infinity});
       };
       parsedData.delete = function deleteFunc(index) {
-        console.log("[delete] index " + index, this);
+        // console.log("[delete] index " + index, this);
+        if(index<0||index>=this.value.length) return;``
+        for(let i=index+1;i<this.value.length;i++){
+          this.value[i-1]=this.value[i];
+        }
+        delete this.value[this.value.length-1];
+        this.value.length--;
+        for (let [, callbacks] of Object.entries(this.callbacks)) {
+          callbacks.forEach(callback=>{
+            callback();
+          })
+        }
       };
 
       for (let i = 0; i < parsedData.value.length; i++) {
@@ -516,12 +601,14 @@ class SchemaParser {
       const totalPath = `${path}.${parsedData.title}`;
       // console.log(totalPath);
       //设置callbacks
-      parsedData.callbacks = root.callbacks[totalPath] || {};
+      // parsedData.callbacks = root.callbacks[totalPath] || {};
+      parsedData.callbacks = [];
       parent.value[property] = new Proxy(parent.value[property], {
         set(target, property, newValue, receiver) {
           let res = null;
           res = Reflect.set(target, property, newValue, receiver);
           if (property === "value") {
+            // console.log(target,property, newValue);
             //在监听set调用后后触发回调
             target.callbacks?.forEach((callback) => {
               callback();
@@ -530,27 +617,6 @@ class SchemaParser {
           return res;
         },
       });
-
-      // if (root.callbacks.hasOwnProperty(totalPath)) {
-      //   const [bindParent, bindProperty] = this.findParent(
-      //     root,
-      //     root.callbacks[totalPath].bindPath
-      //   );
-      //   const cls = root.callbacks[totalPath].callbacks;
-      //   root.callbacks[totalPath].callbacks = cls.map((callback) => {
-      //     return callback.bind(bindParent.value[bindProperty]);
-      //   });
-      //   parent.value[property] = new Proxy(parent.value[property], {
-      //     set(target, property, newValue, receiver) {
-      //       let res = null;
-      //       res = Reflect.set(target, property, newValue, receiver);
-      //       root.callbacks[totalPath].callbacks.forEach((callback) => {
-      //         callback();
-      //       });
-      //       return res;
-      //     },
-      //   });
-      // }
     } else {
       //自定义类型
     }
