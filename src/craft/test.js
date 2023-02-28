@@ -137,18 +137,47 @@ const AccountSchemaSource = {
   },
 };
 
+const data = {
+  netEarning: 0,
+  income: {
+    total: 0,
+    items: [{ total: 0, v2: 0, items: [{ v1: 0, v2: 0 }] }],
+  },
+  expense: {
+    total: 0,
+    items: [{ total: 0, items: [{ value: 0 }] }],
+  }
+}
+
+// const AccountLayout = [
+//   ["Account"],
+//   ["Income"],
+//   ["Item"],
+//   [["${Account.Income.Item.total}", "RIGHT", 2], ["${Account.Income.Item.v2}", "RIGHT", 2]],
+//   [["${Account.Income.Item.AnotherItem.value}", "DOWN", 1, "RIGHT", 2], ["${Account.Income.Item.AnotherItem.v2}", "DOWN", 1, "RIGHT", 2]],
+//   ["Total"],
+//   ["${Account.Income.total}"],
+//   // ["Expense"],
+//   // ["Item"],
+//   // [["${Account.Expense.Item.value}", "DOWN"]],
+//   // ["Total"],
+//   // ["${Account.Expense.total}"],
+//   ["${Account.netEarings}"],
+// ];
+
 const AccountLayout = [
   ["Account"],
   ["Income"],
   ["Item"],
-  [["${Account.Income.Item.value}", "DOWN"]],
+  [["${Account.Income.Item.total}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}"], ["${Account.Income.Item.v2}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}"]],
+  [["${Account.Income.Item.AnotherItem.value}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}", "RIGHT", 2], ["${Account.Income.Item.AnotherItem.v2}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}", "RIGHT", 2]],
   ["Total"],
   ["${Account.Income.total}"],
-  ["Expense"],
-  ["Item"],
-  [["${Account.Expense.Item.value}", "DOWN"]],
-  ["Total"],
-  ["${Account.Expense.total}"],
+  // ["Expense"],
+  // ["Item"],
+  // [["${Account.Expense.Item.value}", "DOWN"]],
+  // ["Total"],
+  // ["${Account.Expense.total}"],
   ["${Account.netEarings}"],
 ];
 
