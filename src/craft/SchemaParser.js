@@ -694,12 +694,14 @@ class SchemaParser {
     this.value = value;
   }
 
-  insertData(index, value) {
+  insertData(index) {
     console.log(index, value, this);
+    this.insert(index);
   }
 
   deleteData(index) {
     console.log(index, this);
+    this.delete(index);
   }
 
   //获取crud函数，并且使用bind绑定到对应的对象，使用crud时就会修改
@@ -1457,14 +1459,15 @@ const AccountLayout = [
   ["Item"],
   [["${Account.Income.Item.value}", "DOWN"]],
   ["Total"],
-  ["${Account.Income.Item.total}"],
+  ["${Account.Income.total}"],
   ["Expense"],
   ["Item"],
   [["${Account.Expense.Item.value}", "DOWN"]],
   ["Total"],
-  ["${Account.Expense.Item.total}"],
+  ["${Account.Expense.total}"],
   ["${Account.netEarings}"],
 ];
+
 
 const BudgetLayout = [
   ["Budget", , "Year"],

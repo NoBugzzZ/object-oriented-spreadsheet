@@ -1,5 +1,66 @@
 import SchemaParser from "./SchemaParser.js";
 
+// const AccountSchemaSource = {
+//   type: "object",
+//   title: "Account",
+//   properties: {
+//     netEarning: {
+//       type: "integer",
+//       formula: "Income.total - Expense.total",
+//     },
+//     income: {
+//       $ref: "#/$defs/Income",
+//     },
+//     expense: {
+//       $ref: "#/$defs/Expense",
+//     },
+//   },
+//   $defs: {
+//     Item: {
+//       type: "object",
+//       title: "Item",
+//       properties: {
+//         value: {
+//           type: "integer",
+//           title: "value",
+//         },
+//       },
+//     },
+//     Income: {
+//       type: "object",
+//       title: "Income",
+//       properties: {
+//         total: {
+//           type: "integer",
+//           formula: "SUM(Item.value)",
+//         },
+//         items: {
+//           type: "array",
+//           items: {
+//             $ref: "#/$defs/Item",
+//           },
+//         },
+//       },
+//     },
+//     Expense: {
+//       type: "object",
+//       title: "Expense",
+//       properties: {
+//         total: {
+//           type: "integer",
+//           formula: "SUM(Item.value)",
+//         },
+//         items: {
+//           type: "array",
+//           items: {
+//             $ref: "#/$defs/Item",
+//           },
+//         },
+//       },
+//     },
+//   },
+// };
+
 const AccountSchemaSource = {
   type: "object",
   title: "Account",
@@ -16,13 +77,28 @@ const AccountSchemaSource = {
     },
   },
   $defs: {
+    AnotherItem: {
+      type: "object",
+      title: "AnotherItem",
+      properties: {
+        value: {
+          type: "integer"
+        },
+      },
+    },
     Item: {
       type: "object",
       title: "Item",
       properties: {
-        value: {
+        total: {
           type: "integer",
-          title: "value",
+          formula: "SUM(AnotherItem.value)",
+        },
+        items: {
+          type: "array",
+          items: {
+            $ref: "#/$defs/AnotherItem",
+          },
         },
       },
     },
@@ -32,7 +108,7 @@ const AccountSchemaSource = {
       properties: {
         total: {
           type: "integer",
-          formula: "SUM(Item.value)",
+          formula: "SUM(Item.total)",
         },
         items: {
           type: "array",
@@ -48,7 +124,7 @@ const AccountSchemaSource = {
       properties: {
         total: {
           type: "integer",
-          formula: "SUM(Item.value)",
+          formula: "SUM(Item.total)",
         },
         items: {
           type: "array",
@@ -60,6 +136,21 @@ const AccountSchemaSource = {
     },
   },
 };
+
+const AccountLayout = [
+  ["Account"],
+  ["Income"],
+  ["Item"],
+  [["${Account.Income.Item.value}", "DOWN"]],
+  ["Total"],
+  ["${Account.Income.total}"],
+  ["Expense"],
+  ["Item"],
+  [["${Account.Expense.Item.value}", "DOWN"]],
+  ["Total"],
+  ["${Account.Expense.total}"],
+  ["${Account.netEarings}"],
+];
 
 const BudgetSchemaSource = {
   type: "object",
@@ -146,37 +237,36 @@ const parser = new SchemaParser(AccountSchemaSource, null);
 parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
-parser.distrubuteCallback(parser.root,parser.root.rootData);
+parser.distrubuteCallback(parser.root, parser.root.rootData);
 // parser.bindThisForCallback(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
 
-
 // parser.root.rootData.value.income.value.total.value = 22;
-parser.root.rootData.value.income.value.items.value[
-  "0"
-].value.value.value = 1;
-parser.root.rootData.value.income.value.items.insert(0);
-parser.root.rootData.value.income.value.items.value[
-  "0"
-].value.value.value = 2;
-parser.root.rootData.value.income.value.items.insert(1);
-parser.root.rootData.value.income.value.items.value[
-  "1"
-].value.value.value = 3;
-parser.root.rootData.value.income.value.items.delete(1);
+// parser.root.rootData.value.income.value.items.value[
+//   "0"
+// ].value.value.value = 1;
+// parser.root.rootData.value.income.value.items.insert(0);
+// parser.root.rootData.value.income.value.items.value[
+//   "0"
+// ].value.value.value = 2;
+// parser.root.rootData.value.income.value.items.insert(1);
+// parser.root.rootData.value.income.value.items.value[
+//   "1"
+// ].value.value.value = 3;
+// parser.root.rootData.value.income.value.items.delete(1);
 
-parser.root.rootData.value.expense.value.items.value[
-  "0"
-].value.value.value = 11;
-parser.root.rootData.value.expense.value.items.insert(0);
-parser.root.rootData.value.expense.value.items.value[
-  "0"
-].value.value.value = 22;
-parser.root.rootData.value.expense.value.items.insert(1);
-parser.root.rootData.value.expense.value.items.value[
-  "1"
-].value.value.value = 33;
-parser.root.rootData.value.expense.value.items.delete(1);
+// parser.root.rootData.value.expense.value.items.value[
+//   "0"
+// ].value.value.value = 11;
+// parser.root.rootData.value.expense.value.items.insert(0);
+// parser.root.rootData.value.expense.value.items.value[
+//   "0"
+// ].value.value.value = 22;
+// parser.root.rootData.value.expense.value.items.insert(1);
+// parser.root.rootData.value.expense.value.items.value[
+//   "1"
+// ].value.value.value = 33;
+// parser.root.rootData.value.expense.value.items.delete(1);
 
 console.dir(parser.root, { depth: Infinity });
 
