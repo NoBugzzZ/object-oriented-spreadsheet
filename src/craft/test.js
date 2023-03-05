@@ -4,7 +4,7 @@ import SchemaParser from "./SchemaParser.js";
 //   type: "object",
 //   title: "Account",
 //   properties: {
-//     netEarning: {
+//     netEarnings: {
 //       type: "integer",
 //       formula: "Income.total - Expense.total",
 //     },
