@@ -22,6 +22,29 @@ class SchemaParser {
     };
     this.root.rootData = this.parse(this.root, schema, data);
   }
+  genArrayFromTemplate(root,parsedData,template){
+    const reg=/\${.+}/ig;
+    const array=[];
+    for(let r=0;r<template.length;++r){
+      const row=[];
+      for(let c=0;c<template[r].length;c++){
+        // console.log(template[r][c]);
+        const cell=template[r][c];
+        if(Array.isArray(cell)){
+          
+        }else if(typeof(cell)==="string"&&reg.test(cell)){
+          const temp=cell.match(reg)[0];
+          const path=temp.slice(2,temp.length-1);
+          console.log(cell,path);
+          row.push({parsedData:this.find(root,parsedData,path)});
+        }else{
+          row.push({value:template[r][c]});
+        }
+      }
+      array.push(row);
+    }
+    return array;
+  }
   defaultData(type) {
     switch (type) {
       case "string":

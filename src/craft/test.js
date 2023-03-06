@@ -65,7 +65,7 @@ const AccountSchemaSource = {
   type: "object",
   title: "Account",
   properties: {
-    netEarning: {
+    netEarnings: {
       type: "integer",
       formula: "Income.total - Expense.total",
     },
@@ -178,7 +178,7 @@ const AccountLayout = [
   // [["${Account.Expense.Item.value}", "DOWN"]],
   // ["Total"],
   // ["${Account.Expense.total}"],
-  ["${Account.netEarings}"],
+  ["${Account.netEarnings}"],
 ];
 
 const BudgetSchemaSource = {
@@ -267,6 +267,8 @@ parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
+const arr=parser.genArrayFromTemplate(parser.root,parser.root.rootData,AccountLayout);
+console.dir(arr,{depth:3});
 // parser.bindThisForCallback(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
 
@@ -297,7 +299,7 @@ parser.distrubuteCallback(parser.root, parser.root.rootData);
 // ].value.value.value = 33;
 // parser.root.rootData.value.expense.value.items.delete(1);
 
-console.dir(parser.root, { depth: Infinity });
+// console.dir(parser.root, { depth: Infinity });
 
 // parser.parseProxy(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
