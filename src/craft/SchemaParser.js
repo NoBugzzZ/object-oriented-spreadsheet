@@ -22,23 +22,31 @@ class SchemaParser {
     };
     this.root.rootData = this.parse(this.root, schema, data);
   }
-  genArrayFromTemplate(root,parsedData,template){
-    const reg=/\${.+}/ig;
-    const array=[];
-    for(let r=0;r<template.length;++r){
-      const row=[];
-      for(let c=0;c<template[r].length;c++){
-        // console.log(template[r][c]);
-        const cell=template[r][c];
-        if(Array.isArray(cell)){
-          
-        }else if(typeof(cell)==="string"&&reg.test(cell)){
-          const temp=cell.match(reg)[0];
-          const path=temp.slice(2,temp.length-1);
-          console.log(cell,path);
-          row.push({parsedData:this.find(root,parsedData,path)});
-        }else{
-          row.push({value:template[r][c]});
+  parseArrayTemplate(root, parsedData, template, reg) {
+    const [target, ...context] = template;
+    const targets = Array.from(new Set(target.match(reg)));
+    const paths = targets.map(t => t.slice(2, t.length - 1))
+    const layouts=[];
+    for(let i=0;i<context.length/2;++i){
+      layouts.push([context[i*2],context[i*2+1]]);
+    }
+    console.log(paths,layouts);
+  }
+  genArrayFromTemplate(root, parsedData, template) {
+    const reg = /\${.+}/ig;
+    const array = [];
+    for (let r = 0; r < template.length; ++r) {
+      const row = [];
+      for (let c = 0; c < template[r].length; c++) {
+        const cell = template[r][c];
+        if (Array.isArray(cell)) {
+          this.parseArrayTemplate(root, parsedData, cell, reg);
+        } else if (typeof (cell) === "string" && reg.test(cell)) {
+          const temp = cell.match(reg)[0];
+          const path = temp.slice(2, temp.length - 1);
+          row.push({ parsedData: this.find(root, parsedData, path) });
+        } else {
+          row.push({ value: template[r][c] });
         }
       }
       array.push(row);
@@ -563,32 +571,32 @@ class SchemaParser {
       const parseProxyFunc = this.parseProxy.bind(this);
       const parseCallbacksFunc = this.parseCallbacks.bind(this);
       const distrubuteCallbackFunc = this.distrubuteCallback.bind(this);
-      const findFunc=this.find.bind(this);
+      const findFunc = this.find.bind(this);
       parsedData.insert = function insertFunc(index) {
         // console.log("[insert] to index " + index, this);
-        if(index<0||index>this.value.index) return;
+        if (index < 0 || index > this.value.index) return;
         const virtualRoot = {
           context: root.context,
           rootData: null,
           schemaSource: this.itemsSchema,
           dataSource: null,
         }
-        virtualRoot.rootData=parseFunc(virtualRoot,virtualRoot.schemaSource,null);
-        parseProxyFunc(virtualRoot,virtualRoot.rootData);
-        parseCallbacksFunc(virtualRoot,virtualRoot.rootData);
-        distrubuteCallbackFunc(virtualRoot,virtualRoot.rootData);
+        virtualRoot.rootData = parseFunc(virtualRoot, virtualRoot.schemaSource, null);
+        parseProxyFunc(virtualRoot, virtualRoot.rootData);
+        parseCallbacksFunc(virtualRoot, virtualRoot.rootData);
+        distrubuteCallbackFunc(virtualRoot, virtualRoot.rootData);
 
-        for(let i=this.value.length-1;i>=index;i--){
-          this.value[i+1]=this.value[i];
+        for (let i = this.value.length - 1; i >= index; i--) {
+          this.value[i + 1] = this.value[i];
         }
 
-        this.value[index]=virtualRoot.rootData;
+        this.value[index] = virtualRoot.rootData;
         this.value.length++;
 
         for (let [path, callbacks] of Object.entries(this.callbacks)) {
           const target = findFunc(virtualRoot, virtualRoot.rootData, path);
           target.callbacks.push(...callbacks);
-          callbacks.forEach(callback=>{
+          callbacks.forEach(callback => {
             callback();
           })
         }
@@ -596,14 +604,14 @@ class SchemaParser {
       };
       parsedData.delete = function deleteFunc(index) {
         // console.log("[delete] index " + index, this);
-        if(index<0||index>=this.value.length) return;``
-        for(let i=index+1;i<this.value.length;i++){
-          this.value[i-1]=this.value[i];
+        if (index < 0 || index >= this.value.length) return; ``
+        for (let i = index + 1; i < this.value.length; i++) {
+          this.value[i - 1] = this.value[i];
         }
-        delete this.value[this.value.length-1];
+        delete this.value[this.value.length - 1];
         this.value.length--;
         for (let [, callbacks] of Object.entries(this.callbacks)) {
-          callbacks.forEach(callback=>{
+          callbacks.forEach(callback => {
             callback();
           })
         }

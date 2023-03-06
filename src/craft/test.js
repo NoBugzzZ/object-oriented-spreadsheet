@@ -84,6 +84,9 @@ const AccountSchemaSource = {
         value: {
           type: "integer"
         },
+        value2:{
+          type: "integer",
+        },
       },
     },
     Item: {
@@ -93,6 +96,9 @@ const AccountSchemaSource = {
         total: {
           type: "integer",
           formula: "SUM(AnotherItem.value)",
+        },
+        value2:{
+          type: "integer",
         },
         items: {
           type: "array",
@@ -171,6 +177,7 @@ const AccountLayout = [
   ["Item"],
   [["${Account.Income.Item.total}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}"], ["${Account.Income.Item.v2}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}"]],
   [["${Account.Income.Item.AnotherItem.value}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}", "RIGHT", 2], ["${Account.Income.Item.AnotherItem.v2}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}", "RIGHT", 2]],
+  [["${Account.Income.Item.AnotherItem.AnotherItem2.value}", "RIGHT", "2*${Account.Income.Item.AnotherItem.length}*${Account.Income.Item.AnotherItem.AnotherItem2.length}", "RIGHT", 2]],
   ["Total"],
   ["${Account.Income.total}"],
   // ["Expense"],
@@ -267,8 +274,9 @@ parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
+console.dir(parser.root, { depth: Infinity });
 const arr=parser.genArrayFromTemplate(parser.root,parser.root.rootData,AccountLayout);
-console.dir(arr,{depth:3});
+// console.dir(arr,{depth:3});
 // parser.bindThisForCallback(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
 
@@ -299,7 +307,7 @@ console.dir(arr,{depth:3});
 // ].value.value.value = 33;
 // parser.root.rootData.value.expense.value.items.delete(1);
 
-// console.dir(parser.root, { depth: Infinity });
+
 
 // parser.parseProxy(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
