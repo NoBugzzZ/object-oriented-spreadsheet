@@ -27,122 +27,171 @@ class SchemaParser {
     if (target == null) {
       return source;
     }
-    // console.log(target,source);
     target.push(...source);
     return target;
   }
-  formatArray(array){
-    let maxColNum=0;
-    array.forEach(row=>{
-      if(row.length>maxColNum){
-        maxColNum=row.length;
+  formatArray(array) {
+    let maxColNum = 0;
+    array.forEach(row => {
+      if (row.length > maxColNum) {
+        maxColNum = row.length;
       }
     })
 
-    array.forEach(row=>{
-      let diff=maxColNum-row.length;
-      for(let i=0;i<diff;++i){
+    array.forEach(row => {
+      let diff = maxColNum - row.length;
+      for (let i = 0; i < diff; ++i) {
         row.push(null)
       }
     })
     return array;
   }
-  mergeArray(arrays,direction,interval){
-    console.log(arrays,direction,interval);
-    if(direction==="DOWN"||direction==="UP"){
-      let maxColNum=0;
-      arrays.forEach(array=>{
-        if(array[0].length>maxColNum){
-          maxColNum=array[0].length;
+  mergeArray(arrays, direction, interval) {
+    // console.log(arrays,direction,interval);
+    if (direction === "DOWN" || direction === "UP") {
+      let maxColNum = 0;
+      arrays.forEach(array => {
+        if (array[0].length > maxColNum) {
+          maxColNum = array[0].length;
         }
       })
-      for(let i=0;i<arrays.length;++i){
-        const array=arrays[i];
-        if(array[0].length===maxColNum){
+      for (let i = 0; i < arrays.length; ++i) {
+        const array = arrays[i];
+        if (array[0].length === maxColNum) {
           continue;
         }
-        let diff=maxColNum-array[0].length;
-        array.forEach(row=>{
-          for(let j=0;j<diff;++j){
+        let diff = maxColNum - array[0].length;
+        array.forEach(row => {
+          for (let j = 0; j < diff; ++j) {
             row.push(null);
           }
         })
       }
-      const res=[];
-      if(direction==="DOWN"){
-        arrays.forEach(array=>{
-          res.push(...array);
-          for(let j=0;j<interval;j++){
-            res.push(Array.from({length:maxColNum},()=>null));
-          }
-        })
-      }else{
-        for(let i=arrays.length-1;i>=0;++i){
-          res.push(...arrays[i]);
-          for(let j=0;j<interval;j++){
-            res.push(Array.from({length:maxColNum},()=>null));
+
+      if (direction === "UP") {
+        arrays.reverse();
+      }
+      const res = [];
+      arrays.forEach((array, index) => {
+        if (index !== 0) {
+          for (let j = 0; j < interval; j++) {
+            res.push(Array.from({ length: maxColNum }, () => null));
           }
         }
-      }
-    }else if(direction==="RIGHT"||direction==="LEFT"){
-      let maxRowNum=0;
-      arrays.forEach(array=>{
-        if(array.length>maxRowNum){
-          maxRowNum=array.length;
+        res.push(...array);
+      })
+      return res;
+    } else if (direction === "RIGHT" || direction === "LEFT") {
+      let maxRowNum = 0;
+      arrays.forEach(array => {
+        if (array.length > maxRowNum) {
+          maxRowNum = array.length;
         }
       })
-      for(let i=0;i<arrays.length;++i){
-        const array=arrays[i];
-        if(array.length===maxRowNum){
+      for (let i = 0; i < arrays.length; ++i) {
+        const array = arrays[i];
+        if (array.length === maxRowNum) {
           continue;
         }
-        let diff=maxRowNum-array.length;
-        for(let j=0;j<diff;++j){
-          array.push(Array.from({length:array[0].length},()=>null));
+        let diff = maxRowNum - array.length;
+        for (let j = 0; j < diff; ++j) {
+          array.push(Array.from({ length: array[0].length }, () => null));
         }
       }
-      const res=[];
-      if(direction==="RIGHT"){
-        for(let i=0;i<maxRowNum;i++){
-          const row=[];
-          
-        }
-      }else{
 
+      if (direction === "LEFT") {
+        arrays.reverse();
       }
+      const res = [];
+      for (let i = 0; i < maxRowNum; ++i) {
+        const row = [];
+        arrays.forEach((array, index) => {
+          if (index !== 0) {
+            for (let j = 0; j < interval; ++j) {
+              row.push(null);
+            }
+          }
+          row.push(...array[i]);
+        })
+        res.push(row);
+      }
+      return res;
     }
+  }
+  flatRow(row) {
+    let maxRowNum = 1;
+    row.forEach(cell => {
+      if (Array.isArray(cell) && cell.length > maxRowNum) {
+        maxRowNum = cell.length;
+      }
+    })
+    const transposeArray = [];
+    row.forEach(cell => {
+      if (Array.isArray(cell)) {
+        const diff = maxRowNum - cell.length;
+        for(let i=0;i<cell[0].length;++i){
+          const r=[];
+          for(let j=0;j<cell.length;++j){
+            r.push(cell[j][i]);
+          }
+          for(let t=0;t<diff;++t){
+            r.push(null);
+          }
+          transposeArray.push(r);
+        }
+
+      } else {
+        const diff = maxRowNum - 1;
+        const r=[];
+        r.push(cell);
+        for(let i=0;i<diff;i++){
+          r.push(null);
+        }
+        transposeArray.push(r);
+      }
+    })
+    const res=[];
+    for(let i=0;i<transposeArray[0].length;++i){
+      const r=[];
+      for(let j=0;j<transposeArray.length;++j){
+        r.push(transposeArray[j][i]);
+      }
+      res.push(r);
+    }
+    return res;
   }
   genArrayFromTemplate(root, parsedData, template) {
     const reg = /\${.+}/ig;
     let array = null;
     for (let r = 0; r < template.length; ++r) {
-      let row = null;
+      const row = [];
       for (let c = 0; c < template[r].length; c++) {
         const cell = template[r][c];
         if (Array.isArray(cell)) {
           const temp = cell[0].match(reg)[0];
           const path = temp.slice(2, temp.length - 1);
-          const childTemplate=cell[3];
-          const target=this.find(root,parsedData,`${path}[]`);
-          const childArrays=[];
-          for(let i=0;i<target.value.length;++i){
-            const childArray=this.genArrayFromTemplate(root,target.value[0],childTemplate);
+          const childTemplate = cell[3];
+          const target = this.find(root, parsedData, `${path}[]`);
+          const childArrays = [];
+          for (let i = 0; i < target.value.length; ++i) {
+            const childArray = this.genArrayFromTemplate(root, target.value[i], childTemplate);
             childArrays.push(childArray);
           }
-          const child=this.mergeArray(childArrays,cell[1],cell[2]);
-          // console.dir(child,{depth:3});
-          row=[[]];
+          const child = this.mergeArray(childArrays, cell[1], cell[2]);
+          // console.dir(child, { depth: 3 });
+          row.push(child);
         } else if (typeof (cell) === "string" && reg.test(cell)) {
           const temp = cell.match(reg)[0];
           const path = temp.slice(2, temp.length - 1);
           const child = [[{ parsedData: this.find(root, parsedData, path) }]];
-          row=this.merge(row,child);
+          row.push(child);
         } else {
           const child = [[{ value: template[r][c] }]];
-          row=this.merge(row,child);
+          row.push(child);
         }
       }
-      array=this.merge(array,row);
+      const flattedRow = this.flatRow(row);
+      array = this.merge(array, flattedRow);
     }
 
     return this.formatArray(array);
