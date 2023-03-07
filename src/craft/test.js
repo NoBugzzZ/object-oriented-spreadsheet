@@ -1,66 +1,5 @@
 import SchemaParser from "./SchemaParser.js";
 
-// const AccountSchemaSource = {
-//   type: "object",
-//   title: "Account",
-//   properties: {
-//     netEarnings: {
-//       type: "integer",
-//       formula: "Income.total - Expense.total",
-//     },
-//     income: {
-//       $ref: "#/$defs/Income",
-//     },
-//     expense: {
-//       $ref: "#/$defs/Expense",
-//     },
-//   },
-//   $defs: {
-//     Item: {
-//       type: "object",
-//       title: "Item",
-//       properties: {
-//         value: {
-//           type: "integer",
-//           title: "value",
-//         },
-//       },
-//     },
-//     Income: {
-//       type: "object",
-//       title: "Income",
-//       properties: {
-//         total: {
-//           type: "integer",
-//           formula: "SUM(Item.value)",
-//         },
-//         items: {
-//           type: "array",
-//           items: {
-//             $ref: "#/$defs/Item",
-//           },
-//         },
-//       },
-//     },
-//     Expense: {
-//       type: "object",
-//       title: "Expense",
-//       properties: {
-//         total: {
-//           type: "integer",
-//           formula: "SUM(Item.value)",
-//         },
-//         items: {
-//           type: "array",
-//           items: {
-//             $ref: "#/$defs/Item",
-//           },
-//         },
-//       },
-//     },
-//   },
-// };
-
 const AccountSchemaSource = {
   type: "object",
   title: "Account",
@@ -77,34 +16,13 @@ const AccountSchemaSource = {
     },
   },
   $defs: {
-    AnotherItem: {
-      type: "object",
-      title: "AnotherItem",
-      properties: {
-        value: {
-          type: "integer"
-        },
-        value2: {
-          type: "integer",
-        },
-      },
-    },
     Item: {
       type: "object",
       title: "Item",
       properties: {
-        total: {
+        value: {
           type: "integer",
-          formula: "SUM(AnotherItem.value)",
-        },
-        value2: {
-          type: "integer",
-        },
-        items: {
-          type: "array",
-          items: {
-            $ref: "#/$defs/AnotherItem",
-          },
+          title: "value",
         },
       },
     },
@@ -114,7 +32,7 @@ const AccountSchemaSource = {
       properties: {
         total: {
           type: "integer",
-          formula: "SUM(Item.total)",
+          formula: "SUM(Item.value)",
         },
         items: {
           type: "array",
@@ -130,7 +48,7 @@ const AccountSchemaSource = {
       properties: {
         total: {
           type: "integer",
-          formula: "SUM(Item.total)",
+          formula: "SUM(Item.value)",
         },
         items: {
           type: "array",
@@ -142,6 +60,88 @@ const AccountSchemaSource = {
     },
   },
 };
+
+// const AccountSchemaSource = {
+//   type: "object",
+//   title: "Account",
+//   properties: {
+//     netEarnings: {
+//       type: "integer",
+//       formula: "Income.total - Expense.total",
+//     },
+//     income: {
+//       $ref: "#/$defs/Income",
+//     },
+//     expense: {
+//       $ref: "#/$defs/Expense",
+//     },
+//   },
+//   $defs: {
+//     AnotherItem: {
+//       type: "object",
+//       title: "AnotherItem",
+//       properties: {
+//         value: {
+//           type: "integer"
+//         },
+//         value2: {
+//           type: "integer",
+//         },
+//       },
+//     },
+//     Item: {
+//       type: "object",
+//       title: "Item",
+//       properties: {
+//         total: {
+//           type: "integer",
+//           formula: "SUM(AnotherItem.value)",
+//         },
+//         value2: {
+//           type: "integer",
+//         },
+//         items: {
+//           type: "array",
+//           items: {
+//             $ref: "#/$defs/AnotherItem",
+//           },
+//         },
+//       },
+//     },
+//     Income: {
+//       type: "object",
+//       title: "Income",
+//       properties: {
+//         total: {
+//           type: "integer",
+//           formula: "SUM(Item.total)",
+//         },
+//         items: {
+//           type: "array",
+//           items: {
+//             $ref: "#/$defs/Item",
+//           },
+//         },
+//       },
+//     },
+//     Expense: {
+//       type: "object",
+//       title: "Expense",
+//       properties: {
+//         total: {
+//           type: "integer",
+//           formula: "SUM(Item.total)",
+//         },
+//         items: {
+//           type: "array",
+//           items: {
+//             $ref: "#/$defs/Item",
+//           },
+//         },
+//       },
+//     },
+//   },
+// };
 
 const data = {
   netEarning: 0,
@@ -171,32 +171,46 @@ const data = {
 //   ["${Account.netEarings}"],
 // ];
 
+// const AccountLayout = [
+//   ["Account"],
+//   ["Income"],
+//   ["Item"],
+//   [["${Account.Income.Item", "RIGHT", 1,
+//     [
+//       ["${Item.v1}","${Item.v2}"],
+//     ],
+//   ]],
+//   [["${Account.Income.Item", "RIGHT", 1,
+//     [
+//       ["${Item.v1}",["${Item.AnotherItem}","RIGHT",1,
+//         [
+//           ["${AnotherItem.v1}"],
+//           ["${AnotherItem.v1}"]
+//         ]
+//     ]],
+//     ],
+//   ]],
+//   ["Total"],
+//   ["${Account.Income.total}"],
+//   // ["Expense"],
+//   // ["Item"],
+//   // [["${Account.Expense.Item.value}", "DOWN"]],
+//   // ["Total"],
+//   // ["${Account.Expense.total}"],
+//   ["${Account.netEarnings}"],
+// ];
+
 const AccountLayout = [
   ["Account"],
   ["Income"],
   ["Item"],
-  [["${Account.Income.Item", "RIGHT", 1,
+  [["${Account.Income.Item}", "DOWN", 1,
     [
-      ["${Item.v1}","${Item.v2}"],
-    ],
-  ]],
-  [["${Account.Income.Item", "RIGHT", 1,
-    [
-      ["${Item.v1}",["${Item.AnotherItem}","RIGHT",1,
-        [
-          ["${AnotherItem.v1}"],
-          ["${AnotherItem.v1}"]
-        ]
-    ]],
+      ["${Item.value}"],
     ],
   ]],
   ["Total"],
   ["${Account.Income.total}"],
-  // ["Expense"],
-  // ["Item"],
-  // [["${Account.Expense.Item.value}", "DOWN"]],
-  // ["Total"],
-  // ["${Account.Expense.total}"],
   ["${Account.netEarnings}"],
 ];
 
@@ -286,7 +300,7 @@ parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
-console.dir(parser.root, { depth: Infinity });
+// console.dir(parser.root, { depth: Infinity });
 const arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
 // console.dir(arr,{depth:3});
 // parser.bindThisForCallback(parser.root, parser.root.rootData);

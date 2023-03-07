@@ -22,36 +22,130 @@ class SchemaParser {
     };
     this.root.rootData = this.parse(this.root, schema, data);
   }
-  parseArrayTemplate(root, parsedData, template, reg) {
-    const [target, ...context] = template;
-    const targets = Array.from(new Set(target.match(reg)));
-    const paths = targets.map(t => t.slice(2, t.length - 1))
-    const layouts=[];
-    for(let i=0;i<context.length/2;++i){
-      layouts.push([context[i*2],context[i*2+1]]);
+
+  merge(target, source) {
+    if (target == null) {
+      return source;
     }
-    console.log(paths,layouts);
+    // console.log(target,source);
+    target.push(...source);
+    return target;
+  }
+  formatArray(array){
+    let maxColNum=0;
+    array.forEach(row=>{
+      if(row.length>maxColNum){
+        maxColNum=row.length;
+      }
+    })
+
+    array.forEach(row=>{
+      let diff=maxColNum-row.length;
+      for(let i=0;i<diff;++i){
+        row.push(null)
+      }
+    })
+    return array;
+  }
+  mergeArray(arrays,direction,interval){
+    console.log(arrays,direction,interval);
+    if(direction==="DOWN"||direction==="UP"){
+      let maxColNum=0;
+      arrays.forEach(array=>{
+        if(array[0].length>maxColNum){
+          maxColNum=array[0].length;
+        }
+      })
+      for(let i=0;i<arrays.length;++i){
+        const array=arrays[i];
+        if(array[0].length===maxColNum){
+          continue;
+        }
+        let diff=maxColNum-array[0].length;
+        array.forEach(row=>{
+          for(let j=0;j<diff;++j){
+            row.push(null);
+          }
+        })
+      }
+      const res=[];
+      if(direction==="DOWN"){
+        arrays.forEach(array=>{
+          res.push(...array);
+          for(let j=0;j<interval;j++){
+            res.push(Array.from({length:maxColNum},()=>null));
+          }
+        })
+      }else{
+        for(let i=arrays.length-1;i>=0;++i){
+          res.push(...arrays[i]);
+          for(let j=0;j<interval;j++){
+            res.push(Array.from({length:maxColNum},()=>null));
+          }
+        }
+      }
+    }else if(direction==="RIGHT"||direction==="LEFT"){
+      let maxRowNum=0;
+      arrays.forEach(array=>{
+        if(array.length>maxRowNum){
+          maxRowNum=array.length;
+        }
+      })
+      for(let i=0;i<arrays.length;++i){
+        const array=arrays[i];
+        if(array.length===maxRowNum){
+          continue;
+        }
+        let diff=maxRowNum-array.length;
+        for(let j=0;j<diff;++j){
+          array.push(Array.from({length:array[0].length},()=>null));
+        }
+      }
+      const res=[];
+      if(direction==="RIGHT"){
+        for(let i=0;i<maxRowNum;i++){
+          const row=[];
+          
+        }
+      }else{
+
+      }
+    }
   }
   genArrayFromTemplate(root, parsedData, template) {
     const reg = /\${.+}/ig;
-    const array = [];
+    let array = null;
     for (let r = 0; r < template.length; ++r) {
-      const row = [];
+      let row = null;
       for (let c = 0; c < template[r].length; c++) {
         const cell = template[r][c];
         if (Array.isArray(cell)) {
-          this.parseArrayTemplate(root, parsedData, cell, reg);
+          const temp = cell[0].match(reg)[0];
+          const path = temp.slice(2, temp.length - 1);
+          const childTemplate=cell[3];
+          const target=this.find(root,parsedData,`${path}[]`);
+          const childArrays=[];
+          for(let i=0;i<target.value.length;++i){
+            const childArray=this.genArrayFromTemplate(root,target.value[0],childTemplate);
+            childArrays.push(childArray);
+          }
+          const child=this.mergeArray(childArrays,cell[1],cell[2]);
+          // console.dir(child,{depth:3});
+          row=[[]];
         } else if (typeof (cell) === "string" && reg.test(cell)) {
           const temp = cell.match(reg)[0];
           const path = temp.slice(2, temp.length - 1);
-          row.push({ parsedData: this.find(root, parsedData, path) });
+          const child = [[{ parsedData: this.find(root, parsedData, path) }]];
+          row=this.merge(row,child);
         } else {
-          row.push({ value: template[r][c] });
+          const child = [[{ value: template[r][c] }]];
+          row=this.merge(row,child);
         }
       }
-      array.push(row);
+      array=this.merge(array,row);
     }
-    return array;
+
+    return this.formatArray(array);
   }
   defaultData(type) {
     switch (type) {
