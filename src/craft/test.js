@@ -300,13 +300,13 @@ parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
-parser.root.rootData.value.income.value.items.value[
-  "0"
-].value.value.value = 1;
-parser.root.rootData.value.income.value.items.insert(1);
-parser.root.rootData.value.income.value.items.value[
-  "1"
-].value.value.value = 2;
+// parser.root.rootData.value.income.value.items.value[
+//   "0"
+// ].value.value.value = 1;
+// parser.root.rootData.value.income.value.items.insert(1);
+// parser.root.rootData.value.income.value.items.value[
+//   "1"
+// ].value.value.value = 2;
 // console.dir(parser.root, { depth: Infinity });
 const arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
 console.dir(arr,{depth:3});

@@ -129,12 +129,12 @@ class SchemaParser {
     row.forEach(cell => {
       if (Array.isArray(cell)) {
         const diff = maxRowNum - cell.length;
-        for(let i=0;i<cell[0].length;++i){
-          const r=[];
-          for(let j=0;j<cell.length;++j){
+        for (let i = 0; i < cell[0].length; ++i) {
+          const r = [];
+          for (let j = 0; j < cell.length; ++j) {
             r.push(cell[j][i]);
           }
-          for(let t=0;t<diff;++t){
+          for (let t = 0; t < diff; ++t) {
             r.push(null);
           }
           transposeArray.push(r);
@@ -142,25 +142,32 @@ class SchemaParser {
 
       } else {
         const diff = maxRowNum - 1;
-        const r=[];
+        const r = [];
         r.push(cell);
-        for(let i=0;i<diff;i++){
+        for (let i = 0; i < diff; i++) {
           r.push(null);
         }
         transposeArray.push(r);
       }
     })
-    const res=[];
-    for(let i=0;i<transposeArray[0].length;++i){
-      const r=[];
-      for(let j=0;j<transposeArray.length;++j){
+    const res = [];
+    for (let i = 0; i < transposeArray[0].length; ++i) {
+      const r = [];
+      for (let j = 0; j < transposeArray.length; ++j) {
         r.push(transposeArray[j][i]);
       }
       res.push(r);
     }
     return res;
   }
-  genArrayFromTemplate(root, parsedData, template) {
+  updateArray(array){
+    
+  }
+  genArrayFromTemplate(root, parsedData, template, insertAndDelete = {}) {
+    const insertFunc = insertAndDelete.insert || null;
+    const deleteFunc = insertAndDelete.delete || null;
+    console.log(insertFunc)
+
     const reg = /\${.+}/ig;
     let array = null;
     for (let r = 0; r < template.length; ++r) {
@@ -172,9 +179,24 @@ class SchemaParser {
           const path = temp.slice(2, temp.length - 1);
           const childTemplate = cell[3];
           const target = this.find(root, parsedData, `${path}[]`);
+          function insertData(index) {
+            console.log(index, value, this);
+            this.insert(index);
+          }
+
+          function deleteData(index) {
+            console.log(index, this);
+            this.delete(index);
+          }
+
           const childArrays = [];
           for (let i = 0; i < target.value.length; ++i) {
-            const childArray = this.genArrayFromTemplate(root, target.value[i], childTemplate);
+            const childArray = this.genArrayFromTemplate(
+              root, target.value[i], childTemplate,
+              {
+                insert: insertData.bind(target),
+                delete: deleteData.bind(target)
+              });
             childArrays.push(childArray);
           }
           const child = this.mergeArray(childArrays, cell[1], cell[2]);
@@ -183,10 +205,25 @@ class SchemaParser {
         } else if (typeof (cell) === "string" && reg.test(cell)) {
           const temp = cell.match(reg)[0];
           const path = temp.slice(2, temp.length - 1);
-          const child = [[{ parsedData: this.find(root, parsedData, path) }]];
+          const target = this.find(root, parsedData, path);
+          function getData() {
+            return this.value;
+          }
+          function setData(value) {
+            console.log(value);
+            this.value = value;
+          }
+
+          const child = [[{ value:target.value, get: getData.bind(target), set: setData.bind(target) }]];
+
+          insertFunc && (child[0][0].insert = insertFunc);
+          deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         } else {
           const child = [[{ value: template[r][c] }]];
+
+          insertFunc && (child[0][0].insert = insertFunc);
+          deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         }
       }
