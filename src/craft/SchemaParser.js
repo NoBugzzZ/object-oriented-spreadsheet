@@ -1,4 +1,3 @@
-import TwoDimensionArray from "./TwoDimensionArray.js";
 const BasicType = ["string", "integer", "number", "boolean", "null"];
 const funcs = {
   SUM: function sum(...items) {
@@ -12,7 +11,6 @@ const funcs = {
 
 class SchemaParser {
   constructor(schema, data) {
-    this.getRoot = this.getRoot.bind(this);
     this.root = {
       context: {},
       callbacks: {},
@@ -160,13 +158,34 @@ class SchemaParser {
     }
     return res;
   }
-  updateArray(array){
-    
+  updateArray(array) {
+    array.forEach(row => {
+      row.forEach(cell => {
+        if (cell?.hasOwnProperty("get")) {
+          cell.value = cell.get();
+        }
+      })
+    })
+  }
+  updateByType(value, type) {
+    switch (type) {
+      case "integer":
+        return parseInt(value);
+      case "number":
+        return parseFloat(value);
+      case "bool":
+        return Boolean(value);
+      case "null":
+        return null;
+      default:
+        return value;
+    }
   }
   genArrayFromTemplate(root, parsedData, template, insertAndDelete = {}) {
-    const insertFunc = insertAndDelete.insert || null;
+    const insertPrevFunc = insertAndDelete.insertPrev || null;
+    const insertPostFunc = insertAndDelete.insertPost || null;
     const deleteFunc = insertAndDelete.delete || null;
-    console.log(insertFunc)
+    // console.log(insertFunc)
 
     const reg = /\${.+}/ig;
     let array = null;
@@ -180,12 +199,12 @@ class SchemaParser {
           const childTemplate = cell[3];
           const target = this.find(root, parsedData, `${path}[]`);
           function insertData(index) {
-            console.log(index, value, this);
+            // console.log(index, this);
             this.insert(index);
           }
 
           function deleteData(index) {
-            console.log(index, this);
+            // console.log(index, this);
             this.delete(index);
           }
 
@@ -194,8 +213,9 @@ class SchemaParser {
             const childArray = this.genArrayFromTemplate(
               root, target.value[i], childTemplate,
               {
-                insert: insertData.bind(target),
-                delete: deleteData.bind(target)
+                insertPrev: insertData.bind(target, i),
+                insertPost: insertData.bind(target, i + 1),
+                delete: deleteData.bind(target, i)
               });
             childArrays.push(childArray);
           }
@@ -209,20 +229,41 @@ class SchemaParser {
           function getData() {
             return this.value;
           }
+
           function setData(value) {
-            console.log(value);
-            this.value = value;
+            // console.log(value,this);
+            let trueValue = null;
+            switch (this.type) {
+              case "integer":
+                trueValue = parseInt(value);
+                break;
+              case "number":
+                trueValue = parseFloat(value);
+                break;
+              case "bool":
+                trueValue = Boolean(value);
+                break;
+              case "null":
+                trueValue = null;
+                break;
+              default:
+                trueValue = value;
+                break;
+            }
+            this.value = trueValue;
           }
 
-          const child = [[{ value:target.value, get: getData.bind(target), set: setData.bind(target) }]];
+          const child = [[{ value: target.value, get: getData.bind(target), set: setData.bind(target) }]];
 
-          insertFunc && (child[0][0].insert = insertFunc);
+          insertPrevFunc && (child[0][0].insertPrev = insertPrevFunc);
+          insertPostFunc && (child[0][0].insertPost = insertPostFunc);
           deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         } else {
           const child = [[{ value: template[r][c] }]];
 
-          insertFunc && (child[0][0].insert = insertFunc);
+          insertPrevFunc && (child[0][0].insertPrev = insertPrevFunc);
+          insertPostFunc && (child[0][0].insertPost = insertPostFunc);
           deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         }
@@ -784,7 +825,8 @@ class SchemaParser {
       };
       parsedData.delete = function deleteFunc(index) {
         // console.log("[delete] index " + index, this);
-        if (index < 0 || index >= this.value.length) return; ``
+        if (index < 0 || index >= this.value.length) return;
+        if(this.value.length===1) return;
         for (let i = index + 1; i < this.value.length; i++) {
           this.value[i - 1] = this.value[i];
         }
@@ -906,7 +948,7 @@ class SchemaParser {
   }
 
   insertData(index) {
-    console.log(index, value, this);
+    console.log(index, this);
     this.insert(index);
   }
 

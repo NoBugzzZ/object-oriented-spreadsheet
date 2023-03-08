@@ -2,36 +2,26 @@ import './App.css';
 import ReactDataSheet from "react-datasheet";
 import 'react-datasheet/lib/react-datasheet.css';
 import { useEffect, useState } from 'react';
-// import Parser from './utils/parser';
-import Schemas from "./utils/data"
-import Parser from './utils/parser.refactor';
-import Tranform from './utils/transformer.refactor';
-import AccountTransformer from './transforms/AccountTransformer';
-import BudgetTransformer from './transforms/BudgetTransformer';
+import SchemaParser from './craft/SchemaParser';
+import { AccountSchemaSource, AccountDataSource, AccountLayout } from './craft/data';
 
-const { parse } = Parser
-const { transform } = Tranform;
-const { Income, Budget, Account } = Schemas;
+const parser = new SchemaParser(AccountSchemaSource, AccountDataSource);
+parser.parseProxy(parser.root, parser.root.rootData);
+
+parser.parseCallbacks(parser.root, parser.root.rootData);
+parser.distrubuteCallback(parser.root, parser.root.rootData);
+
 function App() {
-  const [grid, setGrid] = useState([]);
-  const [root, setRoot] = useState(null);
-  const [rootData, setRootData] = useState(null);
-  const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
+  const [grid, setGrid] = useState(
+    parser.genArrayFromTemplate(parser.root,
+      parser.root.rootData,
+      AccountLayout));
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [transformFunc,setTransformFunc]=useState({func:null});
-  useEffect(() => {
-    const [root, rootData] = parse(Budget);
-    const func=transform.bind(null,BudgetTransformer.transformer,root.entry,rootData,root);
-    const spreadsheet = func();
-    setTransformFunc({func});
-    setRoot(root);
-    setRootData(rootData);
-    setGrid(spreadsheet)
-  }, [])
-    console.log(rootData);
-    console.log(grid);
+  const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
+
+  // console.log(currentPos);
   return (
-    <div className="App"
+    <div
       style={{ position: 'relative' }}
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
@@ -45,22 +35,21 @@ function App() {
             setCurrentPos({ row: start.i, col: start.j });
           }
         }}
-        onContextMenu={(event, cell, i, j) => {
-          // console.log(cell, i, j);
-        }}
         valueRenderer={cell => cell.value}
         onCellsChanged={changes => {
+          const newGrid = grid.map(row => [...row]);
           changes.forEach(({ cell, row, col, value }) => {
-            grid[row][col].update(value);
+            if (newGrid[row][col].hasOwnProperty("set")) {
+              newGrid[row][col].set(value);
+            } else {
+              newGrid[row][col] = { ...newGrid[row][col], value };
+            }
           });
-          setGrid(transformFunc.func())
-          // const grid = this.state.grid.map(row => [...row]);
-          // changes.forEach(({ cell, row, col, value }) => {
-          //   grid[row][col] = { ...grid[row][col], value };
-          // });
-          // this.setState({ grid });
+          parser.updateArray(newGrid);
+          setGrid(newGrid);
         }}
       />
+
       <div
         style={{
           width: '100px',
@@ -70,23 +59,39 @@ function App() {
           position: "absolute",
           left: `${cursorPos.x + 50}px`,
           top: `${cursorPos.y}px`,
-          visibility: grid?.[currentPos.row]?.[currentPos.col]?.hasOwnProperty("insert") ? "visible" : "hidden",
+          visibility: grid?.[currentPos.row]?.[currentPos.col]?.hasOwnProperty("delete") ? "visible" : "hidden",
         }}
       >
         <button onClick={() => {
           const { row, col } = currentPos;
-          grid[row][col]?.insert();
-          setGrid(transformFunc.func())
-        }}>insert</button>
+          grid[row][col]?.insertPrev();
+          setGrid(parser.genArrayFromTemplate(
+            parser.root,
+            parser.root.rootData,
+            AccountLayout))
+        }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
-          console.log(grid[row][col])
+          grid[row][col]?.insertPost();
+          setGrid(parser.genArrayFromTemplate(
+            parser.root,
+            parser.root.rootData,
+            AccountLayout))
+        }}>insertPost</button>
+        <button onClick={() => {
+          const { row, col } = currentPos;
+          // console.log(grid[row][col])
           grid[row][col]?.delete();
-          setGrid(transformFunc.func())
+          setGrid(parser.genArrayFromTemplate(
+            parser.root,
+            parser.root.rootData,
+            AccountLayout))
         }}>delete</button>
       </div>
-
     </div>
+
+
+
   );
 }
 

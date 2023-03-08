@@ -211,6 +211,13 @@ const AccountLayout = [
   ]],
   ["Total"],
   ["${Account.Income.total}"],
+  [["${Account.Expense.Item}", "DOWN", 0,
+    [
+      ["${Item.value}"],
+    ],
+  ]],
+  ["Total"],
+  ["${Account.Expense.total}"],
   ["${Account.netEarnings}"],
 ];
 
@@ -308,7 +315,15 @@ parser.distrubuteCallback(parser.root, parser.root.rootData);
 //   "1"
 // ].value.value.value = 2;
 // console.dir(parser.root, { depth: Infinity });
-const arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
+let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
+arr[3][0].set(1);
+parser.updateArray(arr);
+arr[3][0].insertPost();
+arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
+arr[4][0].set(22);
+parser.updateArray(arr);
+// arr[4][0].delete();
+// arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
 console.dir(arr,{depth:3});
 // parser.bindThisForCallback(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
