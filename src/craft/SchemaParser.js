@@ -425,7 +425,7 @@ class SchemaParser {
    * @param {*} basePath 基于root的父路径
    * @param {*} bindPath 基于root的需要解析formula的parsedData路径
    */
-  genNormalCallback(root, parsedData, func, params, basePath, bindPath) {
+  genNormalCallback(root, parsedData, func, params, basePath) {
     //formula依赖的parsedData的path
     const contexts = [];
     //formula获取参数列表的函数
@@ -461,7 +461,7 @@ class SchemaParser {
       }
     });
   }
-  genArithmeticCallback(root, parsedData, expression, params, basePath, bindPath) {
+  genArithmeticCallback(root, parsedData, expression, params, basePath) {
     const contexts = [];
     const targets = [];
     params.forEach((param) => {
@@ -519,14 +519,14 @@ class SchemaParser {
    * @param {*} basePath 基于root的父路径
    * @param {*} bindPath 基于root的parsedData路径
    */
-  parseFormula(root, parsedData, basePath, bindPath) {
+  parseFormula(root, parsedData, basePath) {
     const { formula } = parsedData;
     const formulaPattern = /^[A-Z]+\(.*\)$/i;
     const expressionPattern = /^\w+(\.\w+)*(\s[-+*/]\s\w+(\.\w+)*)*$/i;
     //普通formula，例如SUM(Item.value)
     if (formulaPattern.test(formula)) {
       const [func, params] = this.parseFormulaStr(formula);
-      this.genNormalCallback(root, parsedData, func, params, basePath, bindPath);
+      this.genNormalCallback(root, parsedData, func, params, basePath);
     } else if (expressionPattern.test(formula)) {
       //表达式formula，例如Now()-birthday，其中Now()是内建函数，当前还未实现，
       //另一个例子比如a-b
@@ -534,7 +534,7 @@ class SchemaParser {
       const variables = Array.from(new Set(formula.match(variableReg)));
       // const operatorReg = /\s[-+*/]\s/ig
       // const operators = formula.match(operatorReg);
-      this.genArithmeticCallback(root, parsedData, formula, variables, basePath, bindPath);
+      this.genArithmeticCallback(root, parsedData, formula, variables, basePath);
     }
   }
 
