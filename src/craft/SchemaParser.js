@@ -39,7 +39,7 @@ class SchemaParser {
     array.forEach(row => {
       let diff = maxColNum - row.length;
       for (let i = 0; i < diff; ++i) {
-        row.push(null)
+        row.push({value:null})
       }
     })
     return array;
@@ -61,7 +61,7 @@ class SchemaParser {
         let diff = maxColNum - array[0].length;
         array.forEach(row => {
           for (let j = 0; j < diff; ++j) {
-            row.push(null);
+            row.push({value:null});
           }
         })
       }

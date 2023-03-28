@@ -3,19 +3,24 @@ import ReactDataSheet from "react-datasheet";
 import 'react-datasheet/lib/react-datasheet.css';
 import { useEffect, useState } from 'react';
 import SchemaParser from './craft/SchemaParser';
-import { AccountSchemaSource, AccountDataSource, AccountLayout } from './craft/data';
+import {
+  AccountSchemaSource, AccountDataSource, AccountLayout,
+  ReportSchemaSource, ReportDataSource, ReportLayout,
+} from './craft/data';
 
-const parser = new SchemaParser(AccountSchemaSource, AccountDataSource);
+const parser = new SchemaParser(ReportSchemaSource, ReportDataSource);
 parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
 
+const layout=ReportLayout;
+
 function App() {
   const [grid, setGrid] = useState(
     parser.genArrayFromTemplate(parser.root,
       parser.root.rootData,
-      AccountLayout));
+      layout));
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
@@ -68,7 +73,7 @@ function App() {
           setGrid(parser.genArrayFromTemplate(
             parser.root,
             parser.root.rootData,
-            AccountLayout))
+            layout))
         }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
@@ -76,7 +81,7 @@ function App() {
           setGrid(parser.genArrayFromTemplate(
             parser.root,
             parser.root.rootData,
-            AccountLayout))
+            layout))
         }}>insertPost</button>
         <button onClick={() => {
           const { row, col } = currentPos;
@@ -85,7 +90,7 @@ function App() {
           setGrid(parser.genArrayFromTemplate(
             parser.root,
             parser.root.rootData,
-            AccountLayout))
+            layout))
         }}>delete</button>
       </div>
     </div>

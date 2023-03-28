@@ -120,7 +120,7 @@ const ReportSchemaSource = {
         },
         salesTotal: {
           type: "number",
-          formula: "SUM(electricity,fuel,industry)"
+          formula: "SUM(electricityUsage,fuelUsage,industryUsage)"
         },
         electricityUsage: {
           type: "number"
@@ -129,13 +129,14 @@ const ReportSchemaSource = {
           type: "number"
         },
         industryUsage: {
-          type: "number"
+          type: "number",
+          formula: "SUM(Industry.JLSH,Industry.YZHX,Industry.YZSH,Industry.YZBSF,Industry.NJCHJ,Industry.NJHX)"
         },
         city: {
           $ref: "#/$defs/City"
         },
         industry: {
-          $ref: "#/defs/Industry"
+          $ref: "#/$defs/Industry"
         }
       }
     },
@@ -220,7 +221,7 @@ const ReportLayout = [
       ["日期", "销售总量", "发电", "城燃与工业燃料", "直供化工",
         "南京", "无锡", "徐州", "常州", "苏州", "南通", "连云港", "淮安", "盐城", "扬州", "镇江", "泰州", "宿迁",
         "金陵石化", "仪征化纤", "扬子石化", "扬子巴斯夫", "南京催化剂", "南京化学"
-      ]
+      ],
       [["${Year.Date}", "DOWN", 0,
         [
           [
@@ -245,4 +246,5 @@ const ReportLayout = [
 
 export {
   AccountSchemaSource, AccountDataSource, AccountLayout,
+  ReportSchemaSource, ReportDataSource, ReportLayout,
 }
