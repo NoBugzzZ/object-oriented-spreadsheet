@@ -14,20 +14,25 @@ parser.parseProxy(parser.root, parser.root.rootData);
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
 
-const layout=ReportLayout;
+const layout = ReportLayout;
+
+const formatGrid = (grid) => {
+  return grid.map(row => row.map(cell => ({ ...cell, width: 80 })));
+}
 
 function App() {
   const [grid, setGrid] = useState(
-    parser.genArrayFromTemplate(parser.root,
-      parser.root.rootData,
-      layout));
+    formatGrid(parser.genArrayFromTemplate(parser.root,
+      parser.root.rootData, layout)));
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
-  // console.log(currentPos);
+
+
+  console.log(grid);
   return (
     <div
-      style={{ position: 'relative' }}
+      style={{ position: 'relative', width: "10000px" }}
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
@@ -70,27 +75,21 @@ function App() {
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPrev();
-          setGrid(parser.genArrayFromTemplate(
-            parser.root,
-            parser.root.rootData,
-            layout))
+          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)))
         }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPost();
-          setGrid(parser.genArrayFromTemplate(
-            parser.root,
-            parser.root.rootData,
-            layout))
+          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)));
         }}>insertPost</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           // console.log(grid[row][col])
           grid[row][col]?.delete();
-          setGrid(parser.genArrayFromTemplate(
-            parser.root,
-            parser.root.rootData,
-            layout))
+          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)));
         }}>delete</button>
       </div>
     </div>

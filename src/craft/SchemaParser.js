@@ -39,7 +39,7 @@ class SchemaParser {
     array.forEach(row => {
       let diff = maxColNum - row.length;
       for (let i = 0; i < diff; ++i) {
-        row.push({value:null})
+        row.push({value:null,readOnly:true})
       }
     })
     return array;
@@ -61,7 +61,7 @@ class SchemaParser {
         let diff = maxColNum - array[0].length;
         array.forEach(row => {
           for (let j = 0; j < diff; ++j) {
-            row.push({value:null});
+            row.push({value:null,readOnly:true});
           }
         })
       }
@@ -73,7 +73,7 @@ class SchemaParser {
       arrays.forEach((array, index) => {
         if (index !== 0) {
           for (let j = 0; j < interval; j++) {
-            res.push(Array.from({ length: maxColNum }, () => null));
+            res.push(Array.from({ length: maxColNum }, () => ({value:null,readOnly:true})));
           }
         }
         res.push(...array);
@@ -93,7 +93,7 @@ class SchemaParser {
         }
         let diff = maxRowNum - array.length;
         for (let j = 0; j < diff; ++j) {
-          array.push(Array.from({ length: array[0].length }, () => null));
+          array.push(Array.from({ length: array[0].length }, () => ({value:null,readOnly:true})));
         }
       }
 
@@ -106,7 +106,7 @@ class SchemaParser {
         arrays.forEach((array, index) => {
           if (index !== 0) {
             for (let j = 0; j < interval; ++j) {
-              row.push(null);
+              row.push({value:null,readOnly:true});
             }
           }
           row.push(...array[i]);
@@ -799,9 +799,10 @@ class SchemaParser {
         const virtualRoot = {
           context: root.context,
           rootData: null,
-          schemaSource: this.itemsSchema,
+          schemaSource: {...this.itemsSchema},
           dataSource: null,
-        }
+        };
+        virtualRoot.schemaSource["$defs"]=root.schemaSource["$defs"];
         virtualRoot.rootData = parseFunc(virtualRoot, virtualRoot.schemaSource, null);
         parseProxyFunc(virtualRoot, virtualRoot.rootData);
         parseCallbacksFunc(virtualRoot, virtualRoot.rootData);

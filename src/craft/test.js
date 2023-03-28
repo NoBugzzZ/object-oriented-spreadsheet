@@ -490,8 +490,9 @@ parser.distrubuteCallback(parser.root, parser.root.rootData);
 // parser.root.rootData.value.income.value.items.value[
 //   "1"
 // ].value.value.value = 2;
-// console.dir(parser.root, { depth: Infinity });
-let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, ReportLayout);
+// parser.root.rootData.value.
+console.dir(parser.root, { depth: Infinity });
+// let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, ReportLayout);
 // arr[3][0].set(1);
 // parser.updateArray(arr);
 // arr[3][0].insertPost();
@@ -500,7 +501,7 @@ let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, ReportL
 // parser.updateArray(arr);
 // arr[4][0].delete();
 // arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
-console.dir(arr, { depth: 3 });
+// console.dir(arr, { depth: 3 });
 // parser.bindThisForCallback(parser.root, parser.root.rootData);
 // parser.clearCallbacks();
 
