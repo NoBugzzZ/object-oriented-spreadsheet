@@ -212,7 +212,238 @@ const ReportSchemaSource = {
   }
 }
 
-const ReportDataSource = null;
+const ReportDataSource = {
+  year: [
+    {
+      year: "2021年度", date: [
+        {
+          date: "1月1日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月2日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月3日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月4日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月5日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月6日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月7日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月8日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月9日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月10日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月11日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月12日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月13日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月14日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月15日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月16日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月17日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月18日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月19日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月20日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+      ]
+    },
+    {
+      year: "2022年度", date: [
+        {
+          date: "1月1日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+        {
+          date: "1月2日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
+          city: {
+            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
+            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
+          },
+          industry:{
+            JLSH:100,YZHX:100,YZSH:100,YZBSF:100,NJCHJ:100,NJHX:300
+          }
+        },
+      ]
+    }
+  ]
+};
 
 const ReportLayout = [
   [["${Report.Year}", "RIGHT", 1,

@@ -8,28 +8,33 @@ import {
   ReportSchemaSource, ReportDataSource, ReportLayout,
 } from './craft/data';
 
-const parser = new SchemaParser(ReportSchemaSource, ReportDataSource);
-parser.parseProxy(parser.root, parser.root.rootData);
-
-parser.parseCallbacks(parser.root, parser.root.rootData);
-parser.distrubuteCallback(parser.root, parser.root.rootData);
-
-const layout = ReportLayout;
-
 const formatGrid = (grid) => {
   return grid.map(row => row.map(cell => ({ ...cell, width: 80 })));
 }
 
 function App() {
-  const [grid, setGrid] = useState(
-    formatGrid(parser.genArrayFromTemplate(parser.root,
-      parser.root.rootData, layout)));
+  const [parser, setParser] = useState(null);
+  const [layout, setLayout] = useState(null);
+  const [grid, setGrid] = useState([]);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
+  useEffect(() => {
+    const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
+    p.parseProxy(p.root, p.root.rootData);
+    p.parseCallbacks(p.root, p.root.rootData);
+    p.distrubuteCallback(p.root, p.root.rootData);
+    setParser(p);
+    setLayout(ReportLayout);
+  }, [])
 
+  useEffect(() => {
+    if (parser && layout) {
+      setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+        parser.root.rootData, layout)));
+    }
+  }, [parser, layout])
 
-  console.log(grid);
   return (
     <div
       style={{ position: 'relative', width: "10000px" }}
