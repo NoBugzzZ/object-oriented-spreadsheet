@@ -27,7 +27,6 @@ function App() {
     setParser(p);
     setLayout(ReportLayout);
   }, [])
-
   useEffect(() => {
     if (parser && layout) {
       setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
@@ -64,6 +63,21 @@ function App() {
           setGrid(newGrid);
         }}
       />
+
+{/* <ReactDataSheet
+    data={[
+			[{ value: 1 ,width:100}, { value: 3 ,width:100}],
+			[{ value: 2 }, { value: 4 }],
+		]}
+    valueRenderer={cell => cell.value}
+        onCellsChanged={changes => {
+          const grid = this.state.grid.map(row => [...row]);
+          changes.forEach(({ cell, row, col, value }) => {
+            grid[row][col] = { ...grid[row][col], value };
+          });
+          this.setState({ grid });
+        }}
+  /> */}
 
       <div
         style={{

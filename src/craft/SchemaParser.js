@@ -133,7 +133,7 @@ class SchemaParser {
             r.push(cell[j][i]);
           }
           for (let t = 0; t < diff; ++t) {
-            r.push(null);
+            r.push({value:null,readOnly:true});
           }
           transposeArray.push(r);
         }
@@ -143,7 +143,7 @@ class SchemaParser {
         const r = [];
         r.push(cell);
         for (let i = 0; i < diff; i++) {
-          r.push(null);
+          r.push({value:null,readOnly:true});
         }
         transposeArray.push(r);
       }
@@ -260,7 +260,7 @@ class SchemaParser {
           deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         } else {
-          const child = [[{ value: template[r][c] }]];
+          const child = [[{ value: template[r][c] ,readOnly:true}]];
 
           insertPrevFunc && (child[0][0].insertPrev = insertPrevFunc);
           insertPostFunc && (child[0][0].insertPost = insertPostFunc);
