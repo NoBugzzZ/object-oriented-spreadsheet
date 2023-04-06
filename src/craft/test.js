@@ -501,10 +501,10 @@ parser.distrubuteCallback(parser.root, parser.root.rootData);
 // console.dir(parser.root, { depth: Infinity });
 
 
-// const start=hrTime.bigint();
-
-// const end = hrTime.bigint();
-// console.log(`Benchmark took ${end - start} nanoseconds`); 
+const start=hrTime.bigint();
+parser.root.rootData.value.netEarnings=21;
+const end = hrTime.bigint();
+console.log(`Benchmark took ${end - start} nanoseconds`); 
 
 
 
