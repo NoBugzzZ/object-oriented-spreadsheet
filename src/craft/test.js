@@ -474,25 +474,43 @@ const ReportLayout = [
   ]],
 ];
 
+const hrTime = process.hrtime;
+
 // const parser = new SchemaParser(BudgetSchemaSource, null);
 // parser.parseCallbacks(parser.root, parser.root.rootData);
 // console.dir(parser.root, { depth: Infinity });
 
-const parser = new SchemaParser(ReportSchemaSource, null);
+
+const parser = new SchemaParser(AccountSchemaSource, null);
 parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
+
+
+
 // parser.root.rootData.value.income.value.items.value[
 //   "0"
 // ].value.value.value = 1;
+
 // parser.root.rootData.value.income.value.items.insert(1);
+ 
 // parser.root.rootData.value.income.value.items.value[
 //   "1"
 // ].value.value.value = 2;
-// parser.root.rootData.value.
-console.dir(parser.root, { depth: Infinity });
-// let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, ReportLayout);
+// console.dir(parser.root, { depth: Infinity });
+
+
+// const start=hrTime.bigint();
+
+// const end = hrTime.bigint();
+// console.log(`Benchmark took ${end - start} nanoseconds`); 
+
+
+
+
+
+// let arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
 // arr[3][0].set(1);
 // parser.updateArray(arr);
 // arr[3][0].insertPost();
