@@ -320,6 +320,10 @@ const ReportSchemaSource = {
   type: "object",
   title: "Report",
   properties: {
+    total: {
+      type: "number",
+      formula: "SUM(Year.total)"
+    },
     year: {
       type: "array",
       items: {
@@ -334,6 +338,10 @@ const ReportSchemaSource = {
       properties: {
         year: {
           type: "string"
+        },
+        total: {
+          type: "number",
+          formula: "SUM(Date.salesTotal)"
         },
         date: {
           type: "array",
@@ -358,7 +366,8 @@ const ReportSchemaSource = {
           type: "number"
         },
         fuelUsage: {
-          type: "number"
+          type: "number",
+          formula:"SUM(City.NanJing, City.WuXi, City.XuZhou,City.ChangZhou, City.SuZhou, City.NanTong,City.LianYunGang, City.HuaiAn, City.YanCheng,City.YangZhou, City.ZhenJiang, City.TaiZhou, City.SuQian)"
         },
         industryUsage: {
           type: "number",
@@ -474,37 +483,39 @@ const ReportLayout = [
   ]],
 ];
 
-const hrTime = process.hrtime;
+// const hrTime = process.hrtime;
 
 // const parser = new SchemaParser(BudgetSchemaSource, null);
 // parser.parseCallbacks(parser.root, parser.root.rootData);
 // console.dir(parser.root, { depth: Infinity });
 
 
-const parser = new SchemaParser(AccountSchemaSource, null);
+const parser = new SchemaParser(ReportSchemaSource, null);
 parser.parseProxy(parser.root, parser.root.rootData);
 
 parser.parseCallbacks(parser.root, parser.root.rootData);
 parser.distrubuteCallback(parser.root, parser.root.rootData);
 
-
+parser.root.rootData.value.year.value["0"].value.date.value[
+  "0"
+].value.city.value.NanJing.value = 1;
 
 // parser.root.rootData.value.income.value.items.value[
 //   "0"
 // ].value.value.value = 1;
 
 // parser.root.rootData.value.income.value.items.insert(1);
- 
+
 // parser.root.rootData.value.income.value.items.value[
 //   "1"
 // ].value.value.value = 2;
-// console.dir(parser.root, { depth: Infinity });
+console.dir(parser.root, { depth: Infinity });
 
 
-const start=hrTime.bigint();
-parser.root.rootData.value.netEarnings=21;
-const end = hrTime.bigint();
-console.log(`Benchmark took ${end - start} nanoseconds`); 
+// const start=hrTime.bigint();
+// parser.root.rootData.value.netEarnings=21;
+// const end = hrTime.bigint();
+// console.log(`Benchmark took ${end - start} nanoseconds`); 
 
 
 

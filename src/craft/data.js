@@ -83,6 +83,10 @@ const ReportSchemaSource = {
   type: "object",
   title: "Report",
   properties: {
+    total: {
+      type: "number",
+      formula: "SUM(Year.total)"
+    },
     year: {
       type: "array",
       items: {
@@ -97,6 +101,10 @@ const ReportSchemaSource = {
       properties: {
         year: {
           type: "string"
+        },
+        total: {
+          type: "number",
+          formula: "SUM(Date.salesTotal)"
         },
         date: {
           type: "array",
@@ -209,9 +217,10 @@ const ReportSchemaSource = {
 }
 
 const ReportDataSource = {
+  total:2000,
   year: [
     {
-      year: "2021年度", date: [
+      year: "2021年度", total:0,date: [
         {
           date: "1月1日", salesTotal: 0, electricityUsage: 0, fuelUsage: 0, industryUsage: 0,
           city: {
@@ -415,7 +424,7 @@ const ReportDataSource = {
       ]
     },
     {
-      year: "2022年度", date: [
+      year: "2022年度",total:2000, date: [
         {
           date: "1月1日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
           city: {
@@ -442,9 +451,10 @@ const ReportDataSource = {
 };
 
 const ReportLayout = [
+  ["total","${Report.total}"],
   [["${Report.Year}", "RIGHT", 1,
     [
-      ["${Year.year}"],
+      ["${Year.year}",,"YearTotal","${Year.total}"],
       [,,,,,"各市用气量",,,,,,,,,,,,,"直供大用户"],
       ["日期", "销售总量", "发电", "城市燃料", "直供化工",
         "南京", "无锡", "徐州", "常州", "苏州", "南通", "连云港", "淮安", "盐城", "扬州", "镇江", "泰州", "宿迁",
