@@ -1,5 +1,6 @@
 import './App.css';
 import ReactDataSheet from "react-datasheet";
+import Spreadsheet from "react-spreadsheet";
 import 'react-datasheet/lib/react-datasheet.css';
 import { useEffect, useState } from 'react';
 import SchemaParser from './craft/SchemaParser';
@@ -20,12 +21,12 @@ function App() {
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
   useEffect(() => {
-    const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
+    const p = new SchemaParser(AccountSchemaSource, AccountDataSource);
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
     setParser(p);
-    setLayout(ReportLayout);
+    setLayout(AccountLayout);
   }, [])
   useEffect(() => {
     if (parser && layout) {
@@ -41,7 +42,7 @@ function App() {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
     >
-      <ReactDataSheet
+      {/* <ReactDataSheet
         data={grid}
         onSelect={(context) => {
           const { start, end } = context;
@@ -62,9 +63,17 @@ function App() {
           parser.updateArray(newGrid);
           setGrid(newGrid);
         }}
-      />
+      /> */}
+      <Spreadsheet data={grid}
+        onChange={(data) => {
+          console.log(data)
+        }}
+        onSelect={({row,col})=>{
+          setCurrentPos({ row, col});
+        }}
+      />;
 
-{/* <ReactDataSheet
+      {/* <ReactDataSheet
     data={[
 			[{ value: 1 ,width:100}, { value: 3 ,width:100}],
 			[{ value: 2 }, { value: 4 }],

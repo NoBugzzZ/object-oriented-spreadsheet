@@ -59,7 +59,24 @@ const AccountSchemaSource = {
   },
 };
 
-const AccountDataSource = null;
+const AccountDataSource = {
+  netEarnings: 8,
+  income: {
+    total: 15,
+    items: [
+      { value: 4 },
+      { value: 5 },
+      { value: 6 },
+    ],
+  },
+  expense: {
+    total: 7,
+    items: [
+      { value: 5 },
+      { value: 2 },
+    ],
+  }
+};
 
 const AccountLayout = [
   ["Income", "IncomeTotal", "ExpenseTotal", "${Account.Expense.total}"],
@@ -217,18 +234,18 @@ const ReportSchemaSource = {
 }
 
 const ReportDataSource = {
-  total:2000,
+  total:300,
   year: [
     {
-      year: "2021年度", total:0,date: [
+      year: "2021年度", total:300,date: [
         {
-          date: "1月1日", salesTotal: 0, electricityUsage: 0, fuelUsage: 0, industryUsage: 0,
+          date: "1月1日", salesTotal: 300, electricityUsage: 100, fuelUsage: 100, industryUsage: 100,
           city: {
-            NanJing: 0, WuXi: 0, XuZhou: 0, ChangZhou: 0, SuZhou: 0, NanTong: 0, LianYunGang: 0,
+            NanJing: 100, WuXi: 0, XuZhou: 0, ChangZhou: 0, SuZhou: 0, NanTong: 0, LianYunGang: 0,
             HuaiAn: 0, YanCheng: 0, YangZhou: 0, ZhenJiang: 0, TaiZhou: 0, SuQian: 0,
           },
           industry: {
-            JLSH: 0, YZHX: 0, YZSH: 0, YZBSF: 0, NJCHJ: 0, NJHX: 0
+            JLSH: 0, YZHX: 100, YZSH: 0, YZBSF: 0, NJCHJ: 0, NJHX: 0
           }
         },
         {
@@ -423,30 +440,7 @@ const ReportDataSource = {
         },
       ]
     },
-    {
-      year: "2022年度",total:2000, date: [
-        {
-          date: "1月1日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
-          city: {
-            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
-            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
-          },
-          industry: {
-            JLSH: 100, YZHX: 100, YZSH: 100, YZBSF: 100, NJCHJ: 100, NJHX: 300
-          }
-        },
-        {
-          date: "1月2日", salesTotal: 1000, electricityUsage: 100, fuelUsage: 100, industryUsage: 800,
-          city: {
-            NanJing: 10, WuXi: 10, XuZhou: 10, ChangZhou: 10, SuZhou: 10, NanTong: 10, LianYunGang: 10,
-            HuaiAn: 10, YanCheng: 10, YangZhou: 10, ZhenJiang: 10, TaiZhou: 10, SuQian: 10,
-          },
-          industry: {
-            JLSH: 100, YZHX: 100, YZSH: 100, YZBSF: 100, NJCHJ: 100, NJHX: 300
-          }
-        },
-      ]
-    }
+    
   ]
 };
 
