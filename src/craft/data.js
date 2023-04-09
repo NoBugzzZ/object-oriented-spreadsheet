@@ -3,8 +3,12 @@ const AccountSchemaSource = {
   title: "Account",
   properties: {
     netEarnings: {
-      type: "integer",
+      type: "number",
       formula: "Income.total - Expense.total",
+    },
+    custom: {
+      type: "string",
+      enum: ["1", "2", "aaa"]
     },
     income: {
       $ref: "#/$defs/Income",
@@ -19,7 +23,7 @@ const AccountSchemaSource = {
       title: "Item",
       properties: {
         value: {
-          type: "integer",
+          type: "number",
           title: "value",
         },
       },
@@ -29,7 +33,7 @@ const AccountSchemaSource = {
       title: "Income",
       properties: {
         total: {
-          type: "integer",
+          type: "number",
           formula: "SUM(Item.value)",
         },
         items: {
@@ -45,7 +49,7 @@ const AccountSchemaSource = {
       title: "Expense",
       properties: {
         total: {
-          type: "integer",
+          type: "number",
           formula: "SUM(Item.value)",
         },
         items: {
@@ -61,6 +65,7 @@ const AccountSchemaSource = {
 
 const AccountDataSource = {
   netEarnings: 8,
+  custom: "1",
   income: {
     total: 15,
     items: [
@@ -93,8 +98,12 @@ const AccountLayout = [
         ["${Item.value}"],
       ],
     ]],
-  ["netEarnings", "${Account.netEarnings}"],
+  ["netEarnings", "${Account.netEarnings}","${Account.custom}"],
 ];
+
+const AccountUiSchema = {
+  custom: "Select"
+}
 
 const ReportSchemaSource = {
   type: "object",
@@ -234,10 +243,10 @@ const ReportSchemaSource = {
 }
 
 const ReportDataSource = {
-  total:300,
+  total: 300,
   year: [
     {
-      year: "2021年度", total:300,date: [
+      year: "2021年度", total: 300, date: [
         {
           date: "1月1日", salesTotal: 300, electricityUsage: 100, fuelUsage: 100, industryUsage: 100,
           city: {
@@ -440,16 +449,16 @@ const ReportDataSource = {
         },
       ]
     },
-    
+
   ]
 };
 
 const ReportLayout = [
-  ["total","${Report.total}"],
+  ["total", "${Report.total}"],
   [["${Report.Year}", "RIGHT", 1,
     [
-      ["${Year.year}",,"YearTotal","${Year.total}"],
-      [,,,,,"各市用气量",,,,,,,,,,,,,"直供大用户"],
+      ["${Year.year}", , "YearTotal", "${Year.total}"],
+      [, , , , , "各市用气量", , , , , , , , , , , , , "直供大用户"],
       ["日期", "销售总量", "发电", "城市燃料", "直供化工",
         "南京", "无锡", "徐州", "常州", "苏州", "南通", "连云港", "淮安", "盐城", "扬州", "镇江", "泰州", "宿迁",
         "金陵石化", "仪征化纤", "扬子石化", "扬子巴斯夫", "南京催化剂", "南京化学"
@@ -477,6 +486,6 @@ const ReportLayout = [
 ];
 
 export {
-  AccountSchemaSource, AccountDataSource, AccountLayout,
+  AccountSchemaSource, AccountDataSource, AccountLayout, AccountUiSchema,
   ReportSchemaSource, ReportDataSource, ReportLayout,
 }

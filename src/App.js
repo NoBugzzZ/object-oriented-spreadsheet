@@ -5,12 +5,56 @@ import 'react-datasheet/lib/react-datasheet.css';
 import { useEffect, useState } from 'react';
 import SchemaParser from './craft/SchemaParser';
 import {
-  AccountSchemaSource, AccountDataSource, AccountLayout,
+  AccountSchemaSource, AccountDataSource, AccountLayout,AccountUiSchema,
   ReportSchemaSource, ReportDataSource, ReportLayout,
 } from './craft/data';
 
+import NumberField from './components/NumberField';
+import Select from './components/Select';
+
+const registerComponents = {
+  "Select": Select,
+}
+
+const typeComponents = {
+  "number": NumberField,
+}
+
 const formatGrid = (grid) => {
   return grid.map(row => row.map(cell => ({ ...cell, width: 80 })));
+}
+
+const transformer = (grid) => {
+  return grid.map(row => row.map(cell => {
+    if(cell.hasOwnProperty("get")){
+      let Component = null;
+      // console.log(cell?.getField())
+      if(cell?.getField().component){
+        console.log(cell?.getField())
+        Component=registerComponents[cell.getField().component];
+      }else{
+        Component=typeComponents[cell.getField().type];
+      }
+      return {
+        ...cell,
+        component:
+          <Component
+            get={cell.get}
+            getField={cell.getField}
+            set={cell.set}
+            register={cell.register}
+            unRegister={cell.unRegister}
+          />,
+        width: 80
+      }
+    }else{
+      return {
+        ...cell,
+        width: 80
+      }
+    }
+    
+  }));
 }
 
 function App() {
@@ -20,17 +64,31 @@ function App() {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
+  const [anoGrid, setAnoGrid] = useState([
+    [{ value: 1, width: 100 }, {
+      value: 3, component:
+        <NumberField
+          get={()=>{}}
+          set={() => { console.log("update") }}
+          register={() => { console.log("register") }}
+          unRegister={() => { console.log("unregister") }}
+        />
+    }],
+    [{ value: 2 }, { value: 4 }],
+  ]);
+
   useEffect(() => {
     const p = new SchemaParser(AccountSchemaSource, AccountDataSource);
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
+    p.parseUiSchema(p.root, p.root.rootData,AccountUiSchema);
     setParser(p);
     setLayout(AccountLayout);
   }, [])
   useEffect(() => {
     if (parser && layout) {
-      setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+      setGrid(transformer(parser.genArrayFromTemplate(parser.root,
         parser.root.rootData, layout)));
     }
   }, [parser, layout])
@@ -42,7 +100,7 @@ function App() {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
     >
-      {/* <ReactDataSheet
+      <ReactDataSheet
         data={grid}
         onSelect={(context) => {
           const { start, end } = context;
@@ -50,43 +108,33 @@ function App() {
             setCurrentPos({ row: start.i, col: start.j });
           }
         }}
+        valueRenderer={cell => cell?.get?.()||cell.value}
+        // onCellsChanged={changes => {
+        //   const newGrid = grid.map(row => [...row]);
+        //   changes.forEach(({ cell, row, col, value }) => {
+        //     if (newGrid[row][col].hasOwnProperty("get")) {
+        //       newGrid[row][col].value=cell.get();
+        //     } else {
+        //       newGrid[row][col] = { ...newGrid[row][col], value };
+        //     }
+        //   });
+        //   // parser.updateArray(newGrid);
+        //   // setGrid(newGrid);
+        // }}
+      />
+
+      <ReactDataSheet
+        data={anoGrid}
         valueRenderer={cell => cell.value}
         onCellsChanged={changes => {
-          const newGrid = grid.map(row => [...row]);
-          changes.forEach(({ cell, row, col, value }) => {
-            if (newGrid[row][col].hasOwnProperty("set")) {
-              newGrid[row][col].set(value);
-            } else {
-              newGrid[row][col] = { ...newGrid[row][col], value };
-            }
-          });
-          parser.updateArray(newGrid);
-          setGrid(newGrid);
-        }}
-      /> */}
-      <Spreadsheet data={grid}
-        onChange={(data) => {
-          console.log(data)
-        }}
-        onSelect={({row,col})=>{
-          setCurrentPos({ row, col});
-        }}
-      />;
-
-      {/* <ReactDataSheet
-    data={[
-			[{ value: 1 ,width:100}, { value: 3 ,width:100}],
-			[{ value: 2 }, { value: 4 }],
-		]}
-    valueRenderer={cell => cell.value}
-        onCellsChanged={changes => {
-          const grid = this.state.grid.map(row => [...row]);
+          console.log(changes);
+          const grid = anoGrid.map(row => [...row]);
           changes.forEach(({ cell, row, col, value }) => {
             grid[row][col] = { ...grid[row][col], value };
           });
-          this.setState({ grid });
+          setAnoGrid(grid);
         }}
-  /> */}
+      />
 
       <div
         style={{
@@ -103,20 +151,20 @@ function App() {
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPrev();
-          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
             parser.root.rootData, layout)))
         }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPost();
-          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
             parser.root.rootData, layout)));
         }}>insertPost</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           // console.log(grid[row][col])
           grid[row][col]?.delete();
-          setGrid(formatGrid(parser.genArrayFromTemplate(parser.root,
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
             parser.root.rootData, layout)));
         }}>delete</button>
       </div>

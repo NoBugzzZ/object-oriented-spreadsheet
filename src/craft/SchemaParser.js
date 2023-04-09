@@ -39,7 +39,7 @@ class SchemaParser {
     array.forEach(row => {
       let diff = maxColNum - row.length;
       for (let i = 0; i < diff; ++i) {
-        row.push({value:null,readOnly:true})
+        row.push({ value: null, readOnly: true })
       }
     })
     return array;
@@ -61,7 +61,7 @@ class SchemaParser {
         let diff = maxColNum - array[0].length;
         array.forEach(row => {
           for (let j = 0; j < diff; ++j) {
-            row.push({value:null,readOnly:true});
+            row.push({ value: null, readOnly: true });
           }
         })
       }
@@ -73,7 +73,7 @@ class SchemaParser {
       arrays.forEach((array, index) => {
         if (index !== 0) {
           for (let j = 0; j < interval; j++) {
-            res.push(Array.from({ length: maxColNum }, () => ({value:null,readOnly:true})));
+            res.push(Array.from({ length: maxColNum }, () => ({ value: null, readOnly: true })));
           }
         }
         res.push(...array);
@@ -93,7 +93,7 @@ class SchemaParser {
         }
         let diff = maxRowNum - array.length;
         for (let j = 0; j < diff; ++j) {
-          array.push(Array.from({ length: array[0].length }, () => ({value:null,readOnly:true})));
+          array.push(Array.from({ length: array[0].length }, () => ({ value: null, readOnly: true })));
         }
       }
 
@@ -106,7 +106,7 @@ class SchemaParser {
         arrays.forEach((array, index) => {
           if (index !== 0) {
             for (let j = 0; j < interval; ++j) {
-              row.push({value:null,readOnly:true});
+              row.push({ value: null, readOnly: true });
             }
           }
           row.push(...array[i]);
@@ -133,7 +133,7 @@ class SchemaParser {
             r.push(cell[j][i]);
           }
           for (let t = 0; t < diff; ++t) {
-            r.push({value:null,readOnly:true});
+            r.push({ value: null, readOnly: true });
           }
           transposeArray.push(r);
         }
@@ -143,7 +143,7 @@ class SchemaParser {
         const r = [];
         r.push(cell);
         for (let i = 0; i < diff; i++) {
-          r.push({value:null,readOnly:true});
+          r.push({ value: null, readOnly: true });
         }
         transposeArray.push(r);
       }
@@ -179,6 +179,31 @@ class SchemaParser {
         return null;
       default:
         return value;
+    }
+  }
+  parseUiSchema(root, parsedData, uiSchema) {
+    // console.log(parsedData,uiSchema)
+    const { type } = parsedData;
+    if (type === "object") {
+      for (let [p, childParsedData] of Object.entries(parsedData.value)) {
+        // console.log(childParsedData)
+        this.parseUiSchema(root, childParsedData, uiSchema?.[childParsedData.title] || null);
+      }
+    } else if (type === "array") {
+      for (let i = 0; i < parsedData.value.length; i++) {
+        this.parseUiSchema(
+          root,
+          parsedData.value[i],
+          uiSchema || null
+        );
+      }
+    } else if (BasicType.includes(type)) {
+      if (uiSchema) {
+        parsedData.component = uiSchema;
+      }
+      // console.log(parsedData,uiSchema);
+    } else {
+      //自定义类型
     }
   }
   genArrayFromTemplate(root, parsedData, template, insertAndDelete = {}) {
@@ -231,7 +256,6 @@ class SchemaParser {
           }
 
           function setData(value) {
-            // console.log(value,this);
             let trueValue = null;
             switch (this.type) {
               case "integer":
@@ -253,14 +277,60 @@ class SchemaParser {
             this.value = trueValue;
           }
 
-          const child = [[{ value: target.value, get: getData.bind(target), set: setData.bind(target) }]];
+          function getField() {
+            return this;
+          }
+
+          function register(callback) {
+            let isExist = false;
+            for (let i = 0; i < this.stateCallbacks.length; ++i) {
+              if (c == callback) {
+                isExist = true;
+                break;
+              }
+            }
+            if (!isExist) {
+              this.stateCallbacks.push(callback);
+              // console.log("register",this);
+            }
+          }
+
+          // function unRegister(callback){
+          //   // console.log("unRegister",this);
+          //   let isExist=false;
+          //   let index=-1;
+          //   for(let i=0;i<this.stateCallbacks.length;++i){
+          //     if(c==callback){
+          //       isExist=true;
+          //       index=i;
+          //       break;
+          //     }
+          //   }
+          //   if(isExist){
+          //     this.stateCallbacks.splice(index,1);
+          //     console.log("unRegister",this);
+          //   }
+          // }
+
+          function unRegister() {
+            this.stateCallbacks = [];
+          }
+
+          const child = [[{
+            value: target.value,
+            get: getData.bind(target),
+            set: setData.bind(target),
+            getField: getField.bind(target),
+            register: register.bind(target),
+            unRegister: unRegister.bind(target),
+          }]];
 
           insertPrevFunc && (child[0][0].insertPrev = insertPrevFunc);
           insertPostFunc && (child[0][0].insertPost = insertPostFunc);
           deleteFunc && (child[0][0].delete = deleteFunc);
           row.push(child);
         } else {
-          const child = [[{ value: template[r][c] ,readOnly:true}]];
+          const child = [[{ value: template[r][c], readOnly: true }]];
 
           insertPrevFunc && (child[0][0].insertPrev = insertPrevFunc);
           insertPostFunc && (child[0][0].insertPost = insertPostFunc);
@@ -638,6 +708,9 @@ class SchemaParser {
         formula: schema.formula || null,
         value: data || this.defaultData(type),
       };
+      if(schema.enum){
+        res.enum=schema.enum;
+      }
       //   if (res.formula) {
       //     this.parseFormula(root, res.formula, path);
       //   }
@@ -799,10 +872,10 @@ class SchemaParser {
         const virtualRoot = {
           context: root.context,
           rootData: null,
-          schemaSource: {...this.itemsSchema},
+          schemaSource: { ...this.itemsSchema },
           dataSource: null,
         };
-        virtualRoot.schemaSource["$defs"]=root.schemaSource["$defs"];
+        virtualRoot.schemaSource["$defs"] = root.schemaSource["$defs"];
         virtualRoot.rootData = parseFunc(virtualRoot, virtualRoot.schemaSource, null);
         parseProxyFunc(virtualRoot, virtualRoot.rootData);
         parseCallbacksFunc(virtualRoot, virtualRoot.rootData);
@@ -827,7 +900,7 @@ class SchemaParser {
       parsedData.delete = function deleteFunc(index) {
         // console.log("[delete] index " + index, this);
         if (index < 0 || index >= this.value.length) return;
-        if(this.value.length===1) return;
+        if (this.value.length === 1) return;
         for (let i = index + 1; i < this.value.length; i++) {
           this.value[i - 1] = this.value[i];
         }
@@ -857,6 +930,7 @@ class SchemaParser {
       //设置callbacks
       // parsedData.callbacks = root.callbacks[totalPath] || {};
       parsedData.callbacks = [];
+      parsedData.stateCallbacks = [];
       parent.value[property] = new Proxy(parent.value[property], {
         set(target, property, newValue, receiver) {
           let res = null;
@@ -865,7 +939,12 @@ class SchemaParser {
             // console.log(target,property, newValue);
             //在监听set调用后后触发回调
             target.callbacks?.forEach((callback) => {
+              // console.log("callbacks")
               callback();
+            });
+            target.stateCallbacks?.forEach((callback) => {
+              // console.log("stateCallbacks")
+              setTimeout(() => callback(target.value), 0);
             });
           }
           return res;
