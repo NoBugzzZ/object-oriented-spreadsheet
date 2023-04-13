@@ -1,13 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import DataSheet from './DataSheet';
+import MySpreadSheet from './SpreadSheet';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App />
+    <DataSheet />
+    <hr/>
+    <MySpreadSheet />
   </React.StrictMode>
 );
 

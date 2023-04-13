@@ -7,9 +7,9 @@ export default function NumberField({get,set,register,unRegister}){
     register(setData);
     // console.log("register");
     return ()=>{
-      // console.log(setData);
-      // unregister(setData);
-      unRegister();
+      // console.log("unRegister");
+      unRegister(setData);
+      // unRegister();
     }
   },[])
 

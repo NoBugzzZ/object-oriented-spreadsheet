@@ -295,26 +295,26 @@ class SchemaParser {
             }
           }
 
-          // function unRegister(callback){
-          //   // console.log("unRegister",this);
-          //   let isExist=false;
-          //   let index=-1;
-          //   for(let i=0;i<this.stateCallbacks.length;++i){
-          //     if(c==callback){
-          //       isExist=true;
-          //       index=i;
-          //       break;
-          //     }
-          //   }
-          //   if(isExist){
-          //     this.stateCallbacks.splice(index,1);
-          //     console.log("unRegister",this);
-          //   }
-          // }
-
-          function unRegister() {
-            this.stateCallbacks = [];
+          function unRegister(callback){
+            // console.log("unRegister",this);
+            let isExist=false;
+            let index=-1;
+            for(let i=0;i<this.stateCallbacks.length;++i){
+              if(this.stateCallbacks[i]==callback){
+                isExist=true;
+                index=i;
+                break;
+              }
+            }
+            if(isExist){
+              this.stateCallbacks.splice(index,1);
+              console.log("unRegister",this);
+            }
           }
+
+          // function unRegister() {
+          //   this.stateCallbacks = [];
+          // }
 
           const child = [[{
             value: target.value,
@@ -944,7 +944,8 @@ class SchemaParser {
             });
             target.stateCallbacks?.forEach((callback) => {
               // console.log("stateCallbacks")
-              setTimeout(() => callback(target.value), 0);
+              // setTimeout(() => callback(target.value), 0);
+              callback(target.value);
             });
           }
           return res;

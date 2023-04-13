@@ -2,11 +2,11 @@ import { useState,useEffect } from "react";
 
 export default function Select({get,getField,set,register,unRegister}){
   const [data,setData]=useState(get());
-  console.log(getField())
+  // console.log(getField())
   useEffect(()=>{
     register(setData);
     return ()=>{
-      unRegister();
+      unRegister(setData);
     }
   },[])
 

@@ -9,7 +9,7 @@ parser.distrubuteCallback(parser.root, parser.root.rootData);
 // console.dir(parser.root.rootData, { depth: Infinity });
 parser.parseUiSchema(parser.root, parser.root.rootData,AccountUiSchema);
 console.dir(parser.root.rootData, { depth: Infinity });
-// const arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
+const arr = parser.genArrayFromTemplate(parser.root, parser.root.rootData, AccountLayout);
 // console.dir(arr, { depth: Infinity });
 
 

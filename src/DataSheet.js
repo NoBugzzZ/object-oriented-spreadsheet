@@ -57,7 +57,7 @@ const transformer = (grid) => {
   }));
 }
 
-function App() {
+function DataSheet() {
   const [parser, setParser] = useState(null);
   const [layout, setLayout] = useState(null);
   const [grid, setGrid] = useState([]);
@@ -123,7 +123,7 @@ function App() {
         // }}
       />
 
-      <ReactDataSheet
+      {/* <ReactDataSheet
         data={anoGrid}
         valueRenderer={cell => cell.value}
         onCellsChanged={changes => {
@@ -134,7 +134,7 @@ function App() {
           });
           setAnoGrid(grid);
         }}
-      />
+      /> */}
 
       <div
         style={{
@@ -175,4 +175,4 @@ function App() {
   );
 }
 
-export default App;
+export default DataSheet;
