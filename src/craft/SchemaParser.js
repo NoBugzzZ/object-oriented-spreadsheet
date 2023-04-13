@@ -308,7 +308,7 @@ class SchemaParser {
             }
             if(isExist){
               this.stateCallbacks.splice(index,1);
-              console.log("unRegister",this);
+              // console.log("unRegister",this);
             }
           }
 

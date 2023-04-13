@@ -5,7 +5,7 @@ import 'react-datasheet/lib/react-datasheet.css';
 import { useEffect, useState } from 'react';
 import SchemaParser from './craft/SchemaParser';
 import {
-  AccountSchemaSource, AccountDataSource, AccountLayout,AccountUiSchema,
+  AccountSchemaSource, AccountDataSource, AccountLayout, AccountUiSchema,
   ReportSchemaSource, ReportDataSource, ReportLayout,
 } from './craft/data';
 
@@ -26,14 +26,14 @@ const formatGrid = (grid) => {
 
 const transformer = (grid) => {
   return grid.map(row => row.map(cell => {
-    if(cell.hasOwnProperty("get")){
+    if (cell.hasOwnProperty("get")) {
       let Component = null;
       // console.log(cell?.getField())
-      if(cell?.getField().component){
-        console.log(cell?.getField())
-        Component=registerComponents[cell.getField().component];
-      }else{
-        Component=typeComponents[cell.getField().type];
+      if (cell?.getField().component) {
+        // console.log(cell?.getField())
+        Component = registerComponents[cell.getField().component];
+      } else {
+        Component = typeComponents[cell.getField().type];
       }
       return {
         ...cell,
@@ -47,13 +47,13 @@ const transformer = (grid) => {
           />,
         width: 80
       }
-    }else{
+    } else {
       return {
         ...cell,
         width: 80
       }
     }
-    
+
   }));
 }
 
@@ -68,7 +68,7 @@ function DataSheet() {
     [{ value: 1, width: 100 }, {
       value: 3, component:
         <NumberField
-          get={()=>{}}
+          get={() => { }}
           set={() => { console.log("update") }}
           register={() => { console.log("register") }}
           unRegister={() => { console.log("unregister") }}
@@ -82,7 +82,7 @@ function DataSheet() {
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
-    p.parseUiSchema(p.root, p.root.rootData,AccountUiSchema);
+    p.parseUiSchema(p.root, p.root.rootData, AccountUiSchema);
     setParser(p);
     setLayout(AccountLayout);
   }, [])
@@ -99,7 +99,15 @@ function DataSheet() {
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
+      // onMouseMove={(event) => {
+      //   setCursorPos({
+      //     x: event.clientX,
+      //     y: event.clientY
+      //   })
+      // }}
     >
+      {/* <div>x: {cursorPos.x}, y: {cursorPos.y}</div> */}
+
       <ReactDataSheet
         data={grid}
         onSelect={(context) => {
@@ -108,19 +116,19 @@ function DataSheet() {
             setCurrentPos({ row: start.i, col: start.j });
           }
         }}
-        valueRenderer={cell => cell?.get?.()||cell.value}
-        // onCellsChanged={changes => {
-        //   const newGrid = grid.map(row => [...row]);
-        //   changes.forEach(({ cell, row, col, value }) => {
-        //     if (newGrid[row][col].hasOwnProperty("get")) {
-        //       newGrid[row][col].value=cell.get();
-        //     } else {
-        //       newGrid[row][col] = { ...newGrid[row][col], value };
-        //     }
-        //   });
-        //   // parser.updateArray(newGrid);
-        //   // setGrid(newGrid);
-        // }}
+        valueRenderer={cell => cell?.get?.() || cell.value}
+      // onCellsChanged={changes => {
+      //   const newGrid = grid.map(row => [...row]);
+      //   changes.forEach(({ cell, row, col, value }) => {
+      //     if (newGrid[row][col].hasOwnProperty("get")) {
+      //       newGrid[row][col].value=cell.get();
+      //     } else {
+      //       newGrid[row][col] = { ...newGrid[row][col], value };
+      //     }
+      //   });
+      //   // parser.updateArray(newGrid);
+      //   // setGrid(newGrid);
+      // }}
       />
 
       {/* <ReactDataSheet

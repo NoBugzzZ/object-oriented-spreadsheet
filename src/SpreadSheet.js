@@ -39,7 +39,7 @@ const transformer = (grid) => {
       }
       // console.log(cell)
       return {
-        // ...cell,
+        ...cell,
         DataViewer: () => (
           <CellViewer
             get={cell.get}
@@ -91,7 +91,6 @@ function MySpreadSheet() {
     }
   }, [parser, layout])
 
-  // console.log(parser)
 
   return (
     <div
@@ -99,11 +98,24 @@ function MySpreadSheet() {
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
+      // onMouseMove={(event) => {
+      //   setCursorPos({
+      //     x: event.clientX,
+      //     y: event.clientY
+      //   })
+      // }}
     >
+
+      {/* <div>x: {cursorPos.x}, y: {cursorPos.y}</div> */}
+
       <Spreadsheet
         data={grid}
-        onChange={(data) => {
-          console.log(data);
+        onSelect={(selected) => {
+          // console.log(selected);
+          if (selected.length === 1) {
+            const { row, column: col } = selected[0];
+            setCurrentPos({ row, col });
+          }
         }}
       />
 
