@@ -84,7 +84,7 @@ const AccountDataSource = {
 };
 
 const AccountLayout = [
-  ["Income", "IncomeTotal", "ExpenseTotal", "${Account.Expense.total}"],
+  ["Income", "IncomeTotal", "Expense", "ExpenseTotal"],
   [
     ["${Account.Income.Item}", "DOWN", 0,
       [
@@ -92,13 +92,14 @@ const AccountLayout = [
       ],
     ],
     "${Account.Income.total}",
-    "Expense",
-    ["${Account.Expense.Item}", "RIGHT", 1,
+    ["${Account.Expense.Item}", "DOWN", 0,
       [
         ["${Item.value}"],
       ],
-    ]],
-  ["netEarnings", "${Account.netEarnings}","${Account.custom}"],
+    ],
+    "${Account.Expense.total}",
+  ],
+  ["netEarnings", "${Account.netEarnings}"],
 ];
 
 const AccountUiSchema = {
