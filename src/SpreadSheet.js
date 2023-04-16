@@ -55,7 +55,6 @@ const transformer = (grid) => {
             register={cell.register}
             unRegister={cell.unRegister}
           />),
-
         width: 80
       }
     } else {
@@ -91,7 +90,7 @@ function MySpreadSheet() {
     }
   }, [parser, layout])
 
-
+console.log(grid)
   return (
     <div
       style={{ position: 'relative', width: "10000px" }}
