@@ -20,6 +20,20 @@ const typeComponents = {
   "number": NumberField,
 }
 
+function transpose(grid){
+  const newGrid=[];
+  const rowNum=grid.length;
+  const colNum=grid[0].length;
+  for(let i=0;i<colNum;++i){
+    const row=[];
+    for(let j=0;j<rowNum;++j){
+      row.push(grid[j][i])
+    }
+    newGrid.push(row);
+  }
+  return newGrid;
+}
+
 const formatGrid = (grid) => {
   return grid.map(row => row.map(cell => ({ ...cell, width: 80 })));
 }
@@ -45,12 +59,12 @@ const transformer = (grid) => {
             register={cell.register}
             unRegister={cell.unRegister}
           />,
-        width: 80
+        width: 35
       }
     } else {
       return {
         ...cell,
-        width: 80
+        width: 50
       }
     }
 
@@ -78,18 +92,18 @@ function DataSheet() {
   ]);
 
   useEffect(() => {
-    const p = new SchemaParser(AccountSchemaSource, AccountDataSource);
+    const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
-    p.parseUiSchema(p.root, p.root.rootData, AccountUiSchema);
+    p.parseUiSchema(p.root, p.root.rootData);
     setParser(p);
-    setLayout(AccountLayout);
+    setLayout(ReportLayout);
   }, [])
   useEffect(() => {
     if (parser && layout) {
-      setGrid(transformer(parser.genArrayFromTemplate(parser.root,
-        parser.root.rootData, layout)));
+      setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
+        parser.root.rootData, layout))));
     }
   }, [parser, layout])
 
@@ -159,21 +173,21 @@ function DataSheet() {
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPrev();
-          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout)))
+          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout))))
         }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPost();
-          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout)));
+          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout))))
         }}>insertPost</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           // console.log(grid[row][col])
           grid[row][col]?.delete();
-          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout)));
+          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout))))
         }}>delete</button>
       </div>
     </div>
