@@ -13,6 +13,7 @@ import {
 import NumberField from './components/NumberField';
 import Select from './components/Select';
 import CellViewer from './components/CellViewer';
+import StringField from './components/StringField';
 
 const registerComponents = {
   "Select": Select,
@@ -20,6 +21,7 @@ const registerComponents = {
 
 const typeComponents = {
   "number": NumberField,
+  "string": StringField,
 }
 
 const formatGrid = (grid) => {
@@ -75,13 +77,13 @@ function MySpreadSheet() {
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
   useEffect(() => {
-    const p = new SchemaParser(AccountSchemaSource, AccountDataSource);
+    const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
-    p.parseUiSchema(p.root, p.root.rootData, AccountUiSchema);
+    p.parseUiSchema(p.root, p.root.rootData);
     setParser(p);
-    setLayout(AccountLayout);
+    setLayout(ReportLayout);
   }, [])
   useEffect(() => {
     if (parser && layout) {

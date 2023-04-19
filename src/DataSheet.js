@@ -11,6 +11,7 @@ import {
 
 import NumberField from './components/NumberField';
 import Select from './components/Select';
+import StringField from './components/StringField';
 
 const registerComponents = {
   "Select": Select,
@@ -18,15 +19,16 @@ const registerComponents = {
 
 const typeComponents = {
   "number": NumberField,
+  "string": StringField,
 }
 
-function transpose(grid){
-  const newGrid=[];
-  const rowNum=grid.length;
-  const colNum=grid[0].length;
-  for(let i=0;i<colNum;++i){
-    const row=[];
-    for(let j=0;j<rowNum;++j){
+function transpose(grid) {
+  const newGrid = [];
+  const rowNum = grid.length;
+  const colNum = grid[0].length;
+  for (let i = 0; i < colNum; ++i) {
+    const row = [];
+    for (let j = 0; j < rowNum; ++j) {
       row.push(grid[j][i])
     }
     newGrid.push(row);
@@ -64,7 +66,7 @@ const transformer = (grid) => {
     } else {
       return {
         ...cell,
-        width: 50
+        width: 80
       }
     }
 
@@ -102,8 +104,10 @@ function DataSheet() {
   }, [])
   useEffect(() => {
     if (parser && layout) {
-      setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
-        parser.root.rootData, layout))));
+      // setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
+      //   parser.root.rootData, layout))));
+      setGrid(transformer(parser.genArrayFromTemplate(parser.root,
+        parser.root.rootData, layout)));
     }
   }, [parser, layout])
 
@@ -113,12 +117,12 @@ function DataSheet() {
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
-      // onMouseMove={(event) => {
-      //   setCursorPos({
-      //     x: event.clientX,
-      //     y: event.clientY
-      //   })
-      // }}
+    // onMouseMove={(event) => {
+    //   setCursorPos({
+    //     x: event.clientX,
+    //     y: event.clientY
+    //   })
+    // }}
     >
       {/* <div>x: {cursorPos.x}, y: {cursorPos.y}</div> */}
 
@@ -173,21 +177,21 @@ function DataSheet() {
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPrev();
-          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout))))
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)));
         }}>insertPrev</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           grid[row][col]?.insertPost();
-          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout))))
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)));
         }}>insertPost</button>
         <button onClick={() => {
           const { row, col } = currentPos;
           // console.log(grid[row][col])
           grid[row][col]?.delete();
-          setGrid(transpose(transformer(parser.genArrayFromTemplate(parser.root,
-            parser.root.rootData, layout))))
+          setGrid(transformer(parser.genArrayFromTemplate(parser.root,
+            parser.root.rootData, layout)));
         }}>delete</button>
       </div>
     </div>

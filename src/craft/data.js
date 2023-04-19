@@ -244,18 +244,18 @@ const ReportSchemaSource = {
 }
 
 const ReportDataSource = {
-  total: 300,
+  total: 0,
   year: [
     {
-      year: "2021年", total: 300, date: [
+      year: "2021年", total: 0, date: [
         {
-          date: "1月1日", salesTotal: 300, electricityUsage: 100, fuelUsage: 100, industryUsage: 100,
+          date: "1月1日", salesTotal: 0, electricityUsage: 0, fuelUsage: 0, industryUsage: 0,
           city: {
-            NanJing: 100, WuXi: 0, XuZhou: 0, ChangZhou: 0, SuZhou: 0, NanTong: 0, LianYunGang: 0,
+            NanJing: 0, WuXi: 0, XuZhou: 0, ChangZhou: 0, SuZhou: 0, NanTong: 0, LianYunGang: 0,
             HuaiAn: 0, YanCheng: 0, YangZhou: 0, ZhenJiang: 0, TaiZhou: 0, SuQian: 0,
           },
           industry: {
-            JLSH: 0, YZHX: 11.1, YZSH: 0, YZBSF: 0, NJCHJ: 0, NJHX: 0
+            JLSH: 0, YZHX: 0, YZSH: 0, YZBSF: 0, NJCHJ: 0, NJHX: 0
           }
         },
         {

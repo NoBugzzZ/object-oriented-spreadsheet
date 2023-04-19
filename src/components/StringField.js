@@ -1,6 +1,6 @@
 import { useState,useEffect } from "react";
 
-export default function NumberField({get,set,register,unRegister}){
+export default function StringField({get,set,register,unRegister}){
   const [data,setData]=useState(get());
 
   useEffect(()=>{
@@ -15,13 +15,9 @@ export default function NumberField({get,set,register,unRegister}){
 
   return(
     <input
-      style={{
-        // width:'80px'
-      }}
-      type="number"
       value={data}
       onChange={(event)=>{
-        set(+event.target.value);
+        set(event.target.value);
         // console.log(+event.target.value)
       }}
     ></input>
