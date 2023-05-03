@@ -79,6 +79,9 @@ function DataSheet() {
   const [grid, setGrid] = useState([]);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
+  const [testGrid, setTestGrid] = useState([[
+    { value: 1 }, { formula: "=A1" }
+  ]]);
 
   const [anoGrid, setAnoGrid] = useState([
     [{ value: 1, width: 100 }, {
@@ -147,6 +150,18 @@ function DataSheet() {
       //   // parser.updateArray(newGrid);
       //   // setGrid(newGrid);
       // }}
+      />
+
+      <ReactDataSheet
+        data={testGrid}
+        valueRenderer={cell =>  cell.value}
+        onCellsChanged={changes => {
+          const grid = testGrid.map(row => [...row]);
+          changes.forEach(({ cell, row, col, value }) => {
+            grid[row][col] = { ...grid[row][col], value };
+          });
+          setTestGrid(grid);
+        }}
       />
 
       {/* <ReactDataSheet

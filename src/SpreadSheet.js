@@ -76,6 +76,13 @@ function MySpreadSheet() {
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
+  const [data, setData] = useState([
+    [{ value: 1 }, { value: 2 },{ value: "=A1+2" }],
+    [{ value: "Vanilla" }, { value: "Chocolate" }],
+    [{ value: "Strawberry" }, { value: "=A3" }],
+  ]);
+
+
   useEffect(() => {
     const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
     p.parseProxy(p.root, p.root.rootData);
@@ -120,6 +127,12 @@ console.log(grid)
         }}
       />
 
+<Spreadsheet data={data} onChange={setData} />;
+<button onClick={()=>{
+  const newData=data.map(row=>[...row]);
+  newData.splice(0,0,[{value:"1"},{value:"2"}]);
+  setData(newData)
+}}>click</button>
       <div
         style={{
           width: '100px',
