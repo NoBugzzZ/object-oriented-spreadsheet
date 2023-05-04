@@ -9,6 +9,7 @@ import {
   AccountSchemaSource, AccountDataSource, AccountLayout, AccountUiSchema,
   ReportSchemaSource, ReportDataSource, ReportLayout,
 } from './craft/data';
+import { MDSheetData1,MDSheetData10,MDSheetData20,MDSheetData30,MDSheetData40 } from './craft/ReportData';
 
 import NumberField from './components/NumberField';
 import Select from './components/Select';
@@ -49,6 +50,14 @@ const transformer = (grid) => {
             unRegister={cell.unRegister}
           />
         ),
+        // DataViewer:() => (
+        //   <Component
+        //     get={cell.get}
+        //     getField={cell.getField}
+        //     set={cell.set}
+        //     register={cell.register}
+        //     unRegister={cell.unRegister}
+        //   />),
         DataEditor: () => (
           <Component
             get={cell.get}
@@ -77,14 +86,14 @@ function MySpreadSheet() {
   const [currentPos, setCurrentPos] = useState({ row: 0, col: 0 });
 
   const [data, setData] = useState([
-    [{ value: 1 }, { value: 2 },{ value: "=A1+2" }],
+    [{ value: 1 }, { value: 2 }, { value: "=A1+2" }],
     [{ value: "Vanilla" }, { value: "Chocolate" }],
     [{ value: "Strawberry" }, { value: "=A3" }],
   ]);
 
 
   useEffect(() => {
-    const p = new SchemaParser(ReportSchemaSource, ReportDataSource);
+    const p = new SchemaParser(ReportSchemaSource, MDSheetData1);
     p.parseProxy(p.root, p.root.rootData);
     p.parseCallbacks(p.root, p.root.rootData);
     p.distrubuteCallback(p.root, p.root.rootData);
@@ -99,19 +108,19 @@ function MySpreadSheet() {
     }
   }, [parser, layout])
 
-console.log(grid)
+  //console.log(grid)
   return (
     <div
       style={{ position: 'relative', width: "10000px" }}
       onClick={(event) => {
         setCursorPos({ x: event.clientX, y: event.clientY })
       }}
-      // onMouseMove={(event) => {
-      //   setCursorPos({
-      //     x: event.clientX,
-      //     y: event.clientY
-      //   })
-      // }}
+    // onMouseMove={(event) => {
+    //   setCursorPos({
+    //     x: event.clientX,
+    //     y: event.clientY
+    //   })
+    // }}
     >
 
       {/* <div>x: {cursorPos.x}, y: {cursorPos.y}</div> */}
@@ -127,12 +136,13 @@ console.log(grid)
         }}
       />
 
-<Spreadsheet data={data} onChange={setData} />;
-<button onClick={()=>{
-  const newData=data.map(row=>[...row]);
-  newData.splice(0,0,[{value:"1"},{value:"2"}]);
-  setData(newData)
-}}>click</button>
+      {/* <Spreadsheet data={data} onChange={setData} />;
+      <button onClick={() => {
+        const newData = data.map(row => [...row]);
+        newData.splice(0, 0, [{ value: "1" }, { value: "2" }]);
+        setData(newData)
+      }}>click</button> */}
+
       <div
         style={{
           width: '100px',
